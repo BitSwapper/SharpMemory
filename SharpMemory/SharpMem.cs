@@ -17,23 +17,19 @@ public class SharpMem
     public MemoryAllocator MemoryAllocator { get; } = new();
     public TrampolineHook TrampolineHook { get; } = new();
 
-    
+
 
     public bool Initialize(string processName, ProcessAccessFlags flags)
     {
-        if(processName.Length >= 4)
-        {
-            string last4Chars = processName.Substring(processName.Length - 4, 4);
-            if(last4Chars.Equals(".exe", StringComparison.OrdinalIgnoreCase))
-                ProcessName = processName.Substring(0, processName.Length - 4);
-            else
-                ProcessName = processName;
-        }
-        else ProcessName = processName;
+        ProcessName = processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
+                      ? processName.Substring(0, processName.Length - 4)
+                      : processName;
 
         IsConnectedToProcess = OpenProc(flags);
+
         return IsConnectedToProcess;
     }
+
 
     private bool OpenProc(ProcessAccessFlags flags)
     {
