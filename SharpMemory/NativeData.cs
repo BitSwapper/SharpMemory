@@ -1,9 +1,11 @@
 ﻿using System.Runtime.InteropServices;
+using static SharpMemory.MemoryAnalyzer;
 
 namespace SharpMemory.Native;
 public static class NativeData
 {
-    [Flags] public enum ProcessAccessFlags : uint
+    [Flags]
+    public enum ProcessAccessFlags : uint
     {
         All = 0x1F0FFF,
         Terminate = 0x1,
@@ -21,4 +23,5 @@ public static class NativeData
     [DllImport("kernel32.dll")] public static extern bool ReadProcessMemory(IntPtr processHandle, IntPtr baseAddress, byte[] byteArrayBuffer, uint size, out uint numberOfBytesRead);
     [DllImport("kernel32.dll")] public static extern bool WriteProcessMemory(IntPtr processHandle, IntPtr baseAddress, byte[] byteArrayBuffer, uint size, out uint numberOfBytesRead);
     [DllImport("kernel32.dll")] public static extern bool VirtualProtectEx(IntPtr processHandle, IntPtr baseAddress, uint size, uint newProtection, out uint oldProtection);
+    [DllImport("kernel32.dll")] public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
 }

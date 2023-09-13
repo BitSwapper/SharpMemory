@@ -1,55 +1,59 @@
 ﻿using System.Diagnostics;
-using System.Globalization;
 
 namespace SharpMemory;
 public class PatternScanning
 {
-    private bool CheckPatternMatches(string pattern, byte[] array2check)
-    {
-        int length = array2check.Length;
-        string[] patternBytes = pattern.Split(' ');
-        int matchCount = 0;
-
-        foreach(byte currentByte in array2check)
-        {
-            if(patternBytes[matchCount].Equals("?") || patternBytes[matchCount].Equals("??"))
-                matchCount++;
-            else if(byte.Parse(patternBytes[matchCount], NumberStyles.HexNumber) == currentByte)
-                matchCount++;
-            else
-                return false;
-        }
-        return true;
-    }
-
     public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress)
     {
         patternAddress = -1;
         long baseAddress = (long)module.BaseAddress;
         uint size = (uint)module.ModuleMemorySize;
         byte[] memDump = SharpMem.Inst.ReadFuncs.ReadByteArray(baseAddress, size);
-        string[] patternBytes = pattern.Split(' ');
-        try
-        {
-            for(int dumpIndex = 0; dumpIndex < memDump.Length; dumpIndex++)
-            {
-                if(memDump[dumpIndex] == byte.Parse(patternBytes[0], NumberStyles.HexNumber))
-                {
-                    byte[] checkArray = new byte[patternBytes.Length];
-                    for(int patternIndex = 0; patternIndex < patternBytes.Length; patternIndex++)
-                        checkArray[patternIndex] = memDump[dumpIndex + patternIndex];
 
-                    if(CheckPatternMatches(pattern, checkArray))
-                        patternAddress = (long)baseAddress + dumpIndex;
-                    else
-                        dumpIndex += 1;
+        // Split the pattern string into an array of bytes
+        byte[] patternBytes = GetPatternBytes(pattern);
+
+        // Iterate through the memory dump and try to find a match for the pattern
+        for(int i = 0; i < memDump.Length - patternBytes.Length; i++)
+        {
+            bool match = true;
+            for(int j = 0; j < patternBytes.Length; j++)
+            {
+                if(patternBytes[j] != memDump[i + j] && patternBytes[j] != 255)
+                {
+                    match = false;
+                    break;
                 }
             }
+            if(match)
+            {
+                patternAddress = baseAddress + i;
+                return true;
+            }
         }
-        catch
+        return false;
+    }
+
+    private byte[] GetPatternBytes(string pattern)
+    {
+        // Split the pattern string into an array of strings
+        string[] hexStrings = pattern.Split(' ');
+        byte[] bytes = new byte[hexStrings.Length];
+
+        // Convert each string to a byte
+        for(int i = 0; i < hexStrings.Length; i++)
         {
-            return false;
+            if(hexStrings[i].Contains("?"))
+            {
+                // Use a placeholder value of 255 to indicate that any byte will match -------This is a problem lowkey lol
+                bytes[i] = 255;
+            }
+            else
+            {
+                bytes[i] = Convert.ToByte(hexStrings[i], 16);
+            }
         }
-        return true;
+
+        return bytes;
     }
 }

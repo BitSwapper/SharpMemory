@@ -13,6 +13,10 @@ public class SharpMem
     public WriteFunctions WriteFuncs { get; } = new();
     public ModuleFunctions ModuleFuncs { get; } = new();
     public PatternScanning PatternScanning { get; } = new();
+    public MemoryAnalyzer MemoryAnalyzer { get; } = new();
+    public MemoryAllocator MemoryAllocator { get; } = new();
+    public TrampolineHook TrampolineHook { get; } = new();
+
     
 
     public bool Initialize(string processName, ProcessAccessFlags flags)
