@@ -1,6 +1,6 @@
-﻿namespace SharpMemory;
-using System;
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
+
+namespace SharpMemory;
 
 public class MemoryAllocator
 {

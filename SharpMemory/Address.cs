@@ -1,4 +1,5 @@
 ﻿namespace SharpMemory;
+
 public class Address
 {
     public long value { get; set; }
