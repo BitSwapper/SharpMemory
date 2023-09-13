@@ -43,15 +43,10 @@ public class PatternScanning
         // Convert each string to a byte
         for(int i = 0; i < hexStrings.Length; i++)
         {
-            if(hexStrings[i].Contains("?"))
-            {
-                // Use a placeholder value of 255 to indicate that any byte will match -------This is a problem lowkey lol
+            if(hexStrings[i].Contains("?"))// Use a placeholder value of 255 to indicate that any byte will match -------This is a problem lowkey lol
                 bytes[i] = 255;
-            }
             else
-            {
                 bytes[i] = Convert.ToByte(hexStrings[i], 16);
-            }
         }
 
         return bytes;
