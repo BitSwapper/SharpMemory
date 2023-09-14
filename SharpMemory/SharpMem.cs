@@ -17,6 +17,7 @@ public class SharpMem
     public MemoryAllocator MemoryAllocator { get; } = new();
     public TrampolineHook TrampolineHook { get; } = new();
 
+    bool hasInitializedEvents = false;
 
 
     public bool Initialize(string processName, ProcessAccessFlags flags)
@@ -27,9 +28,13 @@ public class SharpMem
 
         IsConnectedToProcess = OpenProc(flags);
 
+        if(!hasInitializedEvents)
+            WriteFuncs.WriteFailed += OnWriteFailed;
+
+        hasInitializedEvents = true;
+
         return IsConnectedToProcess;
     }
-
 
     private bool OpenProc(ProcessAccessFlags flags)
     {
@@ -41,6 +46,13 @@ public class SharpMem
         else
             return false;
         return true;
+    }
+
+    void OnWriteFailed()
+    {
+        IsConnectedToProcess = false;
+        ProcessHandle = default;
+        Process = null;
     }
 
     static readonly SharpMem instance = new();

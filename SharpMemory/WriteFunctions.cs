@@ -4,6 +4,7 @@ using static SharpMemory.Native.NativeData;
 namespace SharpMemory;
 public class WriteFunctions
 {
+    public event Action WriteFailed;
     uint PROT_PAGE_READWRITE => 0x04; //https://learn.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants
 
     public bool Write<T>(Address address, T value, bool useVirtualProtect = true)
@@ -48,7 +49,13 @@ public class WriteFunctions
 
             if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, originalPageProtection, out uint dummy);
         }
-        catch { return false; }
+        catch { bResult = false; }
+
+        finally
+        {
+            if(!bResult)
+                WriteFailed?.Invoke();
+        }
         return bResult;
     }
      
