@@ -21,6 +21,10 @@ public class MemoryPointer<T>
     {
         Address currentAddress = AddressBeingPointedTo;
 
+        // Add a validation check.
+        if(currentAddress == 0)
+            return default(T);
+
         if(typeof(T) == typeof(Vector3))
             return (T)(object)currentAddress.ReadVector3();
         else
@@ -30,6 +34,7 @@ public class MemoryPointer<T>
     public void Write(T value)
     {
         Address currentAddress = AddressBeingPointedTo;
+        if(currentAddress == 0) return;
 
         if(typeof(T) == typeof(Vector3))
             currentAddress.WriteVector3((Vector3)(object)value!);
@@ -42,7 +47,14 @@ public class MemoryPointer<T>
         Address currentAddress = BaseAddress;
 
         foreach(int offset in PointerOffsets)
-            currentAddress = currentAddress.Read<long>() + offset;
+        {
+            currentAddress = currentAddress.Read<long>();
+
+            if(currentAddress == 0)
+                return 0;
+
+            currentAddress += offset;
+        }
 
         return currentAddress + PositionalOffset;
     }
