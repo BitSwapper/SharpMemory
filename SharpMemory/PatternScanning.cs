@@ -4,36 +4,14 @@ using System.Text;
 namespace SharpMemory;
 public class PatternScanning
 {
-    public long PatternScan(byte[] patternBytes, byte[] dumpBytes)
-    {
-        for(long i = 0; i < dumpBytes.Length - patternBytes.Length; i++)
-        {
-            bool found = true;
-
-            for(int j = 0; j < patternBytes.Length; j++)
-            {
-                if(patternBytes[j] != 0xFF && patternBytes[j] != dumpBytes[i + j])
-                {
-                    found = false;
-                    break;
-                }
-            }
-
-            if(found)
-                return i;
-        }
-
-        return -1;
-    }
-
     public long PatternScanManual(string pattern, string memDump)
     {
         byte[] dumpBytes = Encoding.ASCII.GetBytes(memDump);
 
         long result = PatternScanManual(pattern, dumpBytes);
 
-       //memDump = "";
-       //dumpBytes = null;
+        memDump = "";
+        dumpBytes = null;
 
         return result;
     }
@@ -41,13 +19,30 @@ public class PatternScanning
     public long PatternScanManual(string pattern, byte[] memDump)
     {
         byte[] patternBytes = ConvertHexStringToByteArray(pattern);
-
         long result = PatternScan(patternBytes, memDump);
 
-       // patternBytes = null;
-       // memDump = null;
-
+        patternBytes = null;
+        memDump = null;
         return result;
+    }
+
+    public long PatternScan(byte[] patternBytes, byte[] dumpBytes)
+    {
+        for(long i = 0; i < dumpBytes.Length - patternBytes.Length; i++)
+        {
+            bool found = true;
+
+            for(int j = 0; j < patternBytes.Length; j++)
+                if(patternBytes[j] != 0xFF && patternBytes[j] != dumpBytes[i + j])
+                {
+                    found = false;
+                    break;
+                }
+
+            if(found)
+                return i;
+        }
+        return -1;
     }
 
     public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress, bool useVirtualProtect = true)

@@ -17,13 +17,34 @@ namespace SharpMemory
 
         public ReadFunctions ReadFuncs { get; private set; }
         public WriteFunctions WriteFuncs { get; private set; }
-        public ModuleFunctions ModuleFuncs { get; } = new();
-        public PatternScanning PatternScanning { get; } = new();
-        public MemoryAnalyzer MemoryAnalyzer { get; } = new();
-        public MemoryAllocator MemoryAllocator { get; } = new();
-        public TrampolineHook TrampolineHook { get; } = new();
+        public ModuleFunctions ModuleFuncs { get; private set; } = new();
+        public PatternScanning PatternScanning { get; private set; } = new();
+        public MemoryAnalyzer MemoryAnalyzer { get; private set; } = new();
+        public MemoryAllocator MemoryAllocator { get; private set; } = new();
+        //public TrampolineHook TrampolineHook { get; private set; } = new();
 
         bool hasInitializedEvents = false;
+
+        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
+        private static extern bool CloseHandle(IntPtr hObject);
+        public void Dispose()
+        {
+
+            Process?.Dispose();
+            ReadFuncs = null;
+            WriteFuncs = null;
+            ModuleFuncs = null;
+            PatternScanning = null;
+            MemoryAnalyzer = null;
+            MemoryAllocator = null;
+
+            if(ProcessHandle != IntPtr.Zero)
+            {
+                CloseHandle(ProcessHandle);
+                ProcessHandle = IntPtr.Zero;
+            }
+            GC.SuppressFinalize(this);
+        }
 
         public bool Initialize(string processName, ProcessAccessFlags flags, Endianness endianness)
         {
@@ -63,12 +84,6 @@ namespace SharpMemory
             Process = null;
         }
 
-        //public void Dispose()
-        //{
-        //    Dispose(true);
-        //    GC.SuppressFinalize(this);
-        //}
-
    
 
         ~SharpMem()
@@ -76,25 +91,6 @@ namespace SharpMemory
             Dispose();
         }
 
-        // DllImport for CloseHandle
-        [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-        private static extern bool CloseHandle(IntPtr hObject);
-        public void Dispose()
-        {
-
-                Process?.Dispose();
-                ReadFuncs = null;
-                WriteFuncs = null;
-            
-
-            // Release unmanaged resources
-            // Close the process handle
-            if(ProcessHandle != IntPtr.Zero)
-            {
-                CloseHandle(ProcessHandle);
-                ProcessHandle = IntPtr.Zero;
-            }
-            GC.SuppressFinalize(this);
-        }
+   
     }
 }
