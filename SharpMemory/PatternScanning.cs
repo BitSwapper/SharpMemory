@@ -1,54 +1,102 @@
 ﻿using System.Diagnostics;
+using System.Text;
 
 namespace SharpMemory;
 public class PatternScanning
 {
-    public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress)
+    public long PatternScan(byte[] patternBytes, byte[] dumpBytes)
+    {
+        for(long i = 0; i < dumpBytes.Length - patternBytes.Length; i++)
+        {
+            bool found = true;
+
+            for(int j = 0; j < patternBytes.Length; j++)
+            {
+                if(patternBytes[j] != 0xFF && patternBytes[j] != dumpBytes[i + j])
+                {
+                    found = false;
+                    break;
+                }
+            }
+
+            if(found)
+                return i;
+        }
+
+        return -1;
+    }
+
+    public long PatternScanManual(string pattern, string memDump)
+    {
+        byte[] patternBytes = ConvertHexStringToByteArray(pattern);
+        byte[] dumpBytes = Encoding.ASCII.GetBytes(memDump);
+
+        return PatternScan(patternBytes, dumpBytes);
+    }
+
+    public long PatternScanManual(string pattern, byte[] memDump)
+    {
+        byte[] patternBytes = ConvertHexStringToByteArray(pattern);
+
+        return PatternScan(patternBytes, memDump);
+    }
+
+    public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress, bool useVirtualProtect = true)
     {
         patternAddress = -1;
         long baseAddress = (long)module.BaseAddress;
         uint size = (uint)module.ModuleMemorySize;
-        byte[] memDump = SharpMem.Inst.ReadFuncs.ReadByteArray(baseAddress, size);
+        byte[] memDump = SharpMem.Inst.ReadFuncs.ReadByteArray(baseAddress, size, useVirtualProtect);
 
-        // Split the pattern string into an array of bytes
         byte[] patternBytes = GetPatternBytes(pattern);
 
-        // Iterate through the memory dump and try to find a match for the pattern
-        for(int i = 0; i < memDump.Length - patternBytes.Length; i++)
+        long result = PatternScan(patternBytes, memDump);
+
+        if(result != -1)
         {
-            bool match = true;
-            for(int j = 0; j < patternBytes.Length; j++)
-            {
-                if(patternBytes[j] != memDump[i + j] && patternBytes[j] != 255)
-                {
-                    match = false;
-                    break;
-                }
-            }
-            if(match)
-            {
-                patternAddress = baseAddress + i;
-                return true;
-            }
+            patternAddress = baseAddress + result;
+            return true;
         }
+
         return false;
     }
 
-    private byte[] GetPatternBytes(string pattern)
+    byte[] GetPatternBytes(string pattern)
     {
-        // Split the pattern string into an array of strings
         string[] hexStrings = pattern.Split(' ');
         byte[] bytes = new byte[hexStrings.Length];
 
-        // Convert each string to a byte
         for(int i = 0; i < hexStrings.Length; i++)
         {
-            if(hexStrings[i].Contains("?"))// Use a placeholder value of 255 to indicate that any byte will match -------This is a problem lowkey lol
-                bytes[i] = 255;
+            if(hexStrings[i].Contains("?"))
+                bytes[i] = 0xFF;
             else
                 bytes[i] = Convert.ToByte(hexStrings[i], 16);
         }
 
         return bytes;
+    }
+
+    byte[] ConvertHexStringToByteArray(string hexString)
+    {
+        hexString = hexString.Replace(" ", "");
+
+        if(hexString.Length % 2 != 0)// Pad with a leading zero if the length is odd
+            hexString = "0" + hexString;
+
+        int length = hexString.Length;
+        List<byte> bytes = new List<byte>();
+
+        for(int i = 0; i < length; i += 2)
+        {
+            string byteString = hexString.Substring(i, 2);
+
+            if(byteString == "??")// Use a wildcard value for "??" bytes
+                bytes.Add(0xFF);
+            else
+                bytes.Add(byte.Parse(byteString, System.Globalization.NumberStyles.HexNumber));
+        }
+
+        return bytes.ToArray();
     }
 }

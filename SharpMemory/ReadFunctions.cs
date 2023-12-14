@@ -51,8 +51,9 @@ public class ReadFunctions
             throw new System.Exception();
 
         byte[] memoryBuffer = new byte[sizeToRead];
-
-        VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out uint oldProtect);
+        uint oldProtect = 0;
+        if(useVirtualProtect)
+            VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out oldProtect);
 
         try
         {
@@ -65,7 +66,8 @@ public class ReadFunctions
         }
         finally
         {
-            VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
+            if(useVirtualProtect)
+                VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
         }
 
         return memoryBuffer;
