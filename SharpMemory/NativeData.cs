@@ -19,6 +19,9 @@ public static class NativeData
         ReadControl = 0x20000,
         Synchronize = 0x100000
     }
+
+    public readonly static uint PAGE_READWRITE = 0x04;
+
     [DllImport("kernel32.dll")] public static extern IntPtr OpenProcess(uint desiredAccess, bool bInheritHandle, int processId);
     [DllImport("kernel32.dll")] public static extern bool ReadProcessMemory(IntPtr processHandle, IntPtr baseAddress, byte[] byteArrayBuffer, uint size, out uint numberOfBytesRead);
     [DllImport("kernel32.dll")] public static extern bool WriteProcessMemory(IntPtr processHandle, IntPtr baseAddress, byte[] byteArrayBuffer, uint size, out uint numberOfBytesRead);
