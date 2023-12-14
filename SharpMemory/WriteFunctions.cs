@@ -1,11 +1,15 @@
 ﻿using System.Runtime.InteropServices;
 using System.Text;
+using SharpMemory.Enums;
 using static SharpMemory.Native.NativeData;
 namespace SharpMemory;
 public class WriteFunctions
 {
     public event Action WriteFailed;
     uint PROT_PAGE_READWRITE => 0x04; //https://learn.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants
+    Endianness Endianness;
+
+    public WriteFunctions(Endianness endianness) => Endianness = endianness;
 
     public bool Write<T>(Address address, T value, bool useVirtualProtect = true)
     {
@@ -43,6 +47,12 @@ public class WriteFunctions
 
         try
         {
+            if(Endianness == Endianness.BigEndian)
+            {
+                // Reverse the byte array before writing
+                Array.Reverse(value);
+            }
+
             if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, PROT_PAGE_READWRITE, out originalPageProtection);
 
             bResult = WriteProcessMemory(procHandle, (IntPtr)address, value, (uint)value.Length, out uint bytesWritten);
@@ -50,7 +60,6 @@ public class WriteFunctions
             if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, originalPageProtection, out uint dummy);
         }
         catch { bResult = false; }
-
         finally
         {
             if(!bResult)
@@ -58,7 +67,8 @@ public class WriteFunctions
         }
         return bResult;
     }
-     
+
+
     public bool WriteStringAscii(long address, string text, bool useVirtualProtect = true) => WriteByteArray(address, Encoding.ASCII.GetBytes(text), useVirtualProtect);
 
     public bool WriteStringUnicode(long address, string text, bool useVirtualProtect = true) => WriteByteArray(address, Encoding.Unicode.GetBytes(text), useVirtualProtect);

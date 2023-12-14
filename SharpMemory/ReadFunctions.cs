@@ -1,13 +1,19 @@
 ﻿using System.Numerics;
 using System.Text;
+using SharpMemory.Enums;
 using static SharpMemory.Native.NativeData;
 
 namespace SharpMemory;
 public class ReadFunctions
 {
+    Endianness Endianness;
+
+    public ReadFunctions(Endianness endianness) => Endianness = endianness;
+
+
     public T Read<T>(Address address, bool useVirtualProtect = true)
     {
-        var read = SharpMem.Inst.ReadFuncs.ReadByteArray;
+        var read = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian;
 
         if(typeof(T).IsBasicType())
         {
@@ -23,7 +29,6 @@ public class ReadFunctions
             else if(typeof(T) == typeof(Single))  return (T)(object)BitConverter.ToSingle(read(address.value, sizeof(Single), useVirtualProtect));
             else if(typeof(T) == typeof(Double))  return (T)(object)BitConverter.ToDouble(read(address.value, sizeof(Double), useVirtualProtect));
         }
-
 
         if(typeof(T) == typeof(Vector2))
         {
@@ -45,7 +50,7 @@ public class ReadFunctions
         return (T)(object)null;
     }
 
-    public byte[] ReadByteArray(long address, uint sizeToRead, bool useVirtualProtect = true)
+    public byte[] ReadByteArrayLittleEndian(long address, uint sizeToRead, bool useVirtualProtect = true)
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
             throw new System.Exception();
@@ -73,8 +78,43 @@ public class ReadFunctions
         return memoryBuffer;
     }
 
+    public byte[] ReadByteArrayDefaultEndian(long address, uint sizeToRead, bool useVirtualProtect = true)
+    {
+        if(!SharpMem.Inst.IsConnectedToProcess)
+            throw new System.Exception();
 
-    public string ReadStringAscii(long address, uint size) => Encoding.ASCII.GetString(ReadByteArray(address, size));
-    public string ReadStringUnicode(long address, uint size) => Encoding.Unicode.GetString(ReadByteArray(address, size));
-    public string ReadStringUTF8(long address, uint size) => Encoding.UTF8.GetString(ReadByteArray(address, size));
+        byte[] memoryBuffer = new byte[sizeToRead];
+        uint oldProtect = 0;
+        if(useVirtualProtect)
+            VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out oldProtect);
+
+        try
+        {
+            ReadProcessMemory(SharpMem.Inst.ProcessHandle, (IntPtr)address, memoryBuffer, sizeToRead, out uint bytesRead);
+
+            if(Endianness == Endianness.BigEndian)
+            {
+                // Reverse only the portion of the array that was read
+                Array.Reverse(memoryBuffer, 0, (int)sizeToRead);
+            }
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine($"Exception while reading memory at 0x{address:X}: {ex.Message}");
+            return new byte[0];
+        }
+        finally
+        {
+            if(useVirtualProtect)
+                VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
+        }
+
+        return memoryBuffer;
+    }
+
+
+
+    public string ReadStringAscii(long address, uint size) => Encoding.ASCII.GetString(ReadByteArrayDefaultEndian(address, size));
+    public string ReadStringUnicode(long address, uint size) => Encoding.Unicode.GetString(ReadByteArrayDefaultEndian(address, size));
+    public string ReadStringUTF8(long address, uint size) => Encoding.UTF8.GetString(ReadByteArrayDefaultEndian(address, size));
 }

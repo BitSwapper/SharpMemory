@@ -8,7 +8,7 @@ public class TrampolineHook
     public void Place(Address targetFunctionAddress, int targetFunctionPrologueLength, byte[] newFunction, Address overrideAddy)
     {
         byte[] targetFunctionPrologue = new byte[targetFunctionPrologueLength];
-        targetFunctionPrologue = SharpMem.Inst.ReadFuncs.ReadByteArray(targetFunctionAddress.value, (uint)targetFunctionPrologue.Length);
+        targetFunctionPrologue = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian(targetFunctionAddress.value, (uint)targetFunctionPrologue.Length);
         IntPtr allocatedMemory = SharpMem.Inst.MemoryAllocator.AllocateMemory(SharpMem.Inst.ProcessHandle, (uint)newFunction.Length, (IntPtr)overrideAddy.value);
 
         long allocatedMemoryValue = (long)allocatedMemory;

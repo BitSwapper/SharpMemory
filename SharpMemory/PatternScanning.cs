@@ -28,17 +28,26 @@ public class PatternScanning
 
     public long PatternScanManual(string pattern, string memDump)
     {
-        byte[] patternBytes = ConvertHexStringToByteArray(pattern);
         byte[] dumpBytes = Encoding.ASCII.GetBytes(memDump);
 
-        return PatternScan(patternBytes, dumpBytes);
+        long result = PatternScanManual(pattern, dumpBytes);
+
+       //memDump = "";
+       //dumpBytes = null;
+
+        return result;
     }
 
     public long PatternScanManual(string pattern, byte[] memDump)
     {
         byte[] patternBytes = ConvertHexStringToByteArray(pattern);
 
-        return PatternScan(patternBytes, memDump);
+        long result = PatternScan(patternBytes, memDump);
+
+       // patternBytes = null;
+       // memDump = null;
+
+        return result;
     }
 
     public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress, bool useVirtualProtect = true)
@@ -46,7 +55,7 @@ public class PatternScanning
         patternAddress = -1;
         long baseAddress = (long)module.BaseAddress;
         uint size = (uint)module.ModuleMemorySize;
-        byte[] memDump = SharpMem.Inst.ReadFuncs.ReadByteArray(baseAddress, size, useVirtualProtect);
+        byte[] memDump = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian(baseAddress, size, useVirtualProtect);
 
         byte[] patternBytes = GetPatternBytes(pattern);
 
