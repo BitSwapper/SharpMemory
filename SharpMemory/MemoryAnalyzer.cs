@@ -4,6 +4,7 @@ using System;
 using System.Runtime.InteropServices;
 using Microsoft.VisualBasic;
 using static SharpMemory.Native.NativeData;
+using System.Diagnostics;
 
 namespace SharpMemory;
 
@@ -22,36 +23,69 @@ public class MemoryAnalyzer
         public uint Type;
     }
 
-    public IntPtr FindUnusedMemory(IntPtr hProcess, uint size, long inputAddress)
+    public Dictionary<long, long> FindUnknownMemory(ProcessModule[] allModules, IntPtr hProcess)
     {
-        IntPtr currentAddress = (IntPtr)(inputAddress - int.MaxValue);
-        while(true)
+        Dictionary<long, long> unknownMemory = new Dictionary<long, long>();
+        Dictionary<long, long> knownModules = new Dictionary<long, long>();
+
+        foreach(ProcessModule module in allModules)
         {
-            MEMORY_BASIC_INFORMATION memInfo = new MEMORY_BASIC_INFORMATION();
-            int memInfoSize = VirtualQueryEx(hProcess, currentAddress, out memInfo, (uint)Marshal.SizeOf(memInfo));
+            knownModules.Add((long)module.BaseAddress, (long)module.BaseAddress + module.ModuleMemorySize);
+        }
 
-            if(memInfoSize == 0)
-                break;
+        IntPtr currentAddress = IntPtr.Zero;
+        long currentStartAddress = 0;
+        long currentEndAddress = 0;
 
-            if(memInfo.Protect == 0x0 && (uint)memInfo.RegionSize.ToInt64() >= size)
+        while(VirtualQueryEx(hProcess, currentAddress, out MEMORY_BASIC_INFORMATION memInfo, (uint)Marshal.SizeOf(typeof(MEMORY_BASIC_INFORMATION))) > 0)
+        {
+            long startAddress = (long)memInfo.BaseAddress;
+            long endAddress = startAddress + (long)memInfo.RegionSize;
+
+            if(memInfo.State == 0x1000 && !IsInKnownModules(knownModules, startAddress, endAddress))
             {
-                // Find the first address of an unused region of at least the specified size
-                IntPtr freeMemoryAddress = memInfo.BaseAddress;
-                while((uint)memInfo.RegionSize.ToInt64() >= size)
+                // Memory region is committed and does not belong to any known modules
+                if(currentStartAddress == 0)
                 {
-                    if(memInfo.Protect != 0x0)
-                    {
-                        if(Math.Abs(freeMemoryAddress.ToInt64() - inputAddress) <= int.MaxValue)
-                        {
-                            return freeMemoryAddress;
-                        }
-                    }
-                    freeMemoryAddress = new IntPtr(freeMemoryAddress.ToInt64() + 1);
-                    memInfoSize = VirtualQueryEx(hProcess, freeMemoryAddress, out memInfo, (uint)Marshal.SizeOf(memInfo));
+                    // Start of a new unknown memory region
+                    currentStartAddress = startAddress;
+                    currentEndAddress = endAddress;
+                }
+                else
+                {
+                    // Extend the current unknown memory region
+                    currentEndAddress = endAddress;
                 }
             }
-            currentAddress = new IntPtr(currentAddress.ToInt64() + memInfo.RegionSize.ToInt64());
+            else
+            {
+                // End of the unknown memory region
+                if(currentStartAddress != 0)
+                {
+                    unknownMemory.Add(currentStartAddress, currentEndAddress);
+                    currentStartAddress = 0;
+                    currentEndAddress = 0;
+                }
+            }
+
+            currentAddress = (IntPtr)(startAddress + (long)memInfo.RegionSize);
         }
-        return IntPtr.Zero;
+
+        // Check if there's an unknown memory region at the end
+        if(currentStartAddress != 0)
+        {
+            unknownMemory.Add(currentStartAddress, currentEndAddress);
+        }
+
+        return unknownMemory;
+    }
+
+    private static bool IsInKnownModules(Dictionary<long, long> knownModules, long startAddress, long endAddress)
+    {
+        foreach(var kvp in knownModules)
+            if(startAddress >= kvp.Key && endAddress <= kvp.Value)
+                return true;
+
+        return false;
     }
 }
