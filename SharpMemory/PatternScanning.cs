@@ -26,23 +26,43 @@ public class PatternScanning
         return result;
     }
 
-    public long PatternScan(byte[] patternBytes, byte[] dumpBytes)
+    public long PatternScan(byte[] patternBytes, Memory<byte> dumpBytes)
     {
-        for(long i = 0; i < dumpBytes.Length - patternBytes.Length; i++)
+        Span<byte> dumpSpan = dumpBytes.Span;
+
+        for(long i = 0; i < dumpSpan.Length - patternBytes.Length; i++)
         {
             bool found = true;
 
             for(int j = 0; j < patternBytes.Length; j++)
-                if(patternBytes[j] != 0xFF && patternBytes[j] != dumpBytes[i + j])
+            {
+                if(patternBytes[j] != 0xFF && patternBytes[j] != dumpSpan[(int)(i + j)])
                 {
                     found = false;
                     break;
                 }
+            }
 
             if(found)
+            {
+                // Pattern found at index i
                 return i;
+            }
         }
+
+        // Pattern not found
         return -1;
+    }
+
+
+    public long PatternScanManual(string pattern, Memory<byte> memDump)
+    {
+        byte[] patternBytes = ConvertHexStringToByteArray(pattern);
+        long result = PatternScan(patternBytes, memDump);
+
+        patternBytes = null;
+        memDump = null;
+        return result;
     }
 
     public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress, bool useVirtualProtect = true)
