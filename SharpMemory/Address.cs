@@ -18,22 +18,22 @@
     // Implicit conversion from Address to long (for easy work with other numeric operations)
     public static implicit operator long(Address address) => address.value;
 
-    
+
     public static Address operator +(Address a, long b) => new Address(a.value + b);
 
-    
+
     public static Address operator +(Address a, int b) => new Address(a.value + b);
 
-   
+
     public static Address operator +(Address a, Address b) => new Address(a.value + b.value);
 
-    
+
     public static Address operator -(Address a, long b) => new Address(a.value - b);
 
-    
+
     public static Address operator -(Address a, int b) => new Address(a.value - b);
 
-    
+
     public static Address operator -(Address a, Address b) => new Address(a.value - b.value);
 
     public override bool Equals(object obj)
@@ -56,15 +56,14 @@
         return left.value == right.value;
     }
 
-    public static bool operator !=(Address left, Address right)
-    {
-        return !(left == right);
-    }
+    public static bool operator !=(Address left, Address right) => !(left == right);
+
 
     public override string ToString() => value.ToString();
+    public string ToStringHex() => value.ToString("X");
 
-    public override int GetHashCode()
-    {
-        return value.GetHashCode();
-    }
+
+
+
+    public override int GetHashCode() => value.GetHashCode();
 }

@@ -4,6 +4,28 @@ using System.Text;
 namespace SharpMemory;
 public class PatternScanning
 {
+    public Address FindPatternInDynaMappedModule(string pattern, bool shouldEndIn4Zeros = false)
+    {
+        var modules = SharpMem.Inst.ModuleFuncs.GetAllModules();
+        var dynaMappedModules = SharpMem.Inst.MemoryAnalyzer.FindUnknownMemory(modules, SharpMem.Inst.ProcessHandle);
+
+        List<long> possibleMatches = new();
+        foreach(var module in dynaMappedModules)
+        {
+            uint moduleSize = (uint)(module.Value - module.Key);
+            Memory<byte> dumpBytes = SharpMem.Inst.ReadFuncs.ReadByteArrayLittleEndian(module.Key, moduleSize, false);
+
+
+            long resultStr = SharpMem.Inst.PatternScanning.PatternScanManual(pattern, dumpBytes);
+            if(resultStr != -1)
+                possibleMatches.Add(module.Key + resultStr);
+        }
+
+        if(shouldEndIn4Zeros)
+            return possibleMatches.Where(m => m.ToString("X").EndsWith("0000")).First();
+        return possibleMatches.First();
+    }
+
     public long PatternScanManual(string pattern, string memDump)
     {
         byte[] dumpBytes = Encoding.ASCII.GetBytes(memDump);
@@ -44,13 +66,9 @@ public class PatternScanning
             }
 
             if(found)
-            {
-                // Pattern found at index i
                 return i;
-            }
         }
 
-        // Pattern not found
         return -1;
     }
 
