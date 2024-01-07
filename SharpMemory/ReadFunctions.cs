@@ -64,35 +64,46 @@ public class ReadFunctions
         return (T)(object)null!;
     }
 
-    public Memory<byte> ReadByteArrayLittleEndian(long address, uint sizeToRead, bool useVirtualProtect = false)
+    public IEnumerable<Memory<byte>> ReadByteArrayLittleEndian(long address, uint sizeToRead, int chunkSize, bool useVirtualProtect = false)
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
-            throw new System.Exception();
+            throw new Exception("Not connected to process.");
 
-
-        Memory<byte> memoryBuffer = new Memory<byte>(reusableBuffer);
         uint oldProtect = 0;
+        int totalBytesRead = 0;
+        int currentOffset = 0;
+        uint bytesRead = 0;
 
-        if(useVirtualProtect)
-            VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out oldProtect);
-        try
-        {
-            ReadProcessMemory(SharpMem.Inst.ProcessHandle, (IntPtr)address, reusableBuffer, sizeToRead, out uint bytesRead);
-            memoryBuffer = memoryBuffer.Slice(0, (int)bytesRead);
-        }
-        catch(Exception ex)
-        {
-            Console.WriteLine($"Exception while reading memory at 0x{address:X}: {ex.Message}");
-            return Memory<byte>.Empty;
-        }
-        finally
-        {
-            if(useVirtualProtect)
-                VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
-        }
 
-        return memoryBuffer;
+        //Need to redo how VP is handled here
+        //if(useVirtualProtect)
+        //    VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out oldProtect);
+
+        while(totalBytesRead < sizeToRead)
+        {
+            try
+            {
+                uint bytesToRead = (uint)Math.Min(chunkSize, sizeToRead - totalBytesRead);
+                ReadProcessMemory(SharpMem.Inst.ProcessHandle, (IntPtr)(address + currentOffset), reusableBuffer, bytesToRead, out bytesRead);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine($"Exception while reading memory at 0x{address:X}: {ex.Message}");
+            }
+
+
+            if(bytesRead == 0)
+                yield break;
+
+            totalBytesRead += (int)bytesRead;
+            currentOffset += (int)bytesRead;
+
+            yield return new Memory<byte>(reusableBuffer, 0, (int)bytesRead);
+        }
+        //if(useVirtualProtect)
+        //    VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
     }
+
 
     public Memory<byte> ReadByteArrayDefaultEndian(long address, uint sizeToRead, bool useVirtualProtect = false)
     {

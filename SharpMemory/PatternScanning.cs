@@ -1,10 +1,8 @@
 ﻿using System.Diagnostics;
-using System.Text;
-
 namespace SharpMemory;
 public class PatternScanning
 {
-    public Address FindPatternInDynaMappedModule(string pattern, string endsWith = "")//endsWith 0000 for example for 007 AuF; any emulated mirror will end in 4 zeros
+    public Address FindPatternInDynaMappedModule(string pattern, int chunkSize = 80000, string endsWith = "")//may want endsWith 0000 for example for 007 AuF; any emulated mirror base will end in 4 zeros
     {
         var modules = SharpMem.Inst.ModuleFuncs.GetAllModules();
         var dynaMappedModules = SharpMem.Inst.MemoryAnalyzer.FindUnknownMemory(modules, SharpMem.Inst.ProcessHandle);
@@ -15,12 +13,20 @@ public class PatternScanning
             long moduleBaseAddress = module.Key;
             long moduleEndAddress = module.Value;
             uint moduleSize = (uint)(moduleEndAddress - moduleBaseAddress);//lord have mercy on me if a module is bigger than uint. too lazy to fix now :Skull:
-            Memory<byte> dumpBytes = SharpMem.Inst.ReadFuncs.ReadByteArrayLittleEndian(moduleBaseAddress, moduleSize, false);
+            long currentModulePositionOffset = 0;
 
-            long resultStr = SharpMem.Inst.PatternScanning.PatternScanManual(pattern, dumpBytes);
-            if(resultStr != -1)
-                possibleMatches.Add(moduleBaseAddress + resultStr);
+            foreach(var chunk in SharpMem.Inst.ReadFuncs.ReadByteArrayLittleEndian(moduleBaseAddress, moduleSize, chunkSize, false))
+            {
+                long resultStr = SharpMem.Inst.PatternScanning.PatternScanManual(pattern, chunk);
+                if(resultStr != -1)
+                {
+                    possibleMatches.Add(moduleBaseAddress + currentModulePositionOffset + resultStr);
+                    break;
+                }
+                currentModulePositionOffset += chunk.Length;
+            }
         }
+
 
         if(endsWith != "")
             return possibleMatches.Where(m => m.ToString("X").EndsWith(endsWith)).First();
@@ -31,22 +37,27 @@ public class PatternScanning
     public long PatternScan(byte[] patternBytes, Memory<byte> dumpBytes)
     {
         Span<byte> dumpSpan = dumpBytes.Span;
+        int patternLength = patternBytes.Length;
+        int dumpLength = dumpSpan.Length;
 
-        for(long i = 0; i < dumpSpan.Length - patternBytes.Length; i++)
+        if(dumpLength >= patternLength)
         {
-            bool found = true;
-
-            for(int j = 0; j < patternBytes.Length; j++)
+            for(int i = 0; i <= dumpLength - patternLength; i++)
             {
-                if(patternBytes[j] != 0xFF && patternBytes[j] != dumpSpan[(int)(i + j)])
-                {
-                    found = false;
-                    break;
-                }
-            }
+                bool found = true;
 
-            if(found)
-                return i;
+                for(int j = 0; j < patternLength; j++)
+                {
+                    if(patternBytes[j] != 0xFF && patternBytes[j] != dumpSpan[(int)(i + j)])
+                    {
+                        found = false;
+                        break;
+                    }
+                }
+
+                if(found)
+                    return i;
+            }
         }
 
         return -1;
