@@ -15,7 +15,7 @@ public class PatternScanning
             uint moduleSize = (uint)(moduleEndAddress - moduleBaseAddress);//lord have mercy on me if a module is bigger than uint. too lazy to fix now :Skull:
             long currentModulePositionOffset = 0;
 
-            foreach(var chunk in SharpMem.Inst.ReadFuncs.ReadByteArrayLittleEndian(moduleBaseAddress, moduleSize, chunkSize, false))
+            foreach(var chunk in SharpMem.Inst.ReadFuncs.ReadByteArrayChunkedLittleEndian(moduleBaseAddress, moduleSize, chunkSize, false))
             {
                 long resultStr = SharpMem.Inst.PatternScanning.PatternScanManual(pattern, chunk);
                 if(resultStr != -1)

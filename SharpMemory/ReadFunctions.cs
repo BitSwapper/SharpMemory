@@ -64,7 +64,7 @@ public class ReadFunctions
         return (T)(object)null!;
     }
 
-    public IEnumerable<Memory<byte>> ReadByteArrayLittleEndian(long address, uint sizeToRead, int chunkSize, bool useVirtualProtect = false)
+    public IEnumerable<Memory<byte>> ReadByteArrayChunkedLittleEndian(long address, uint sizeToRead, int chunkSize, bool useVirtualProtect = false)
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
             throw new Exception("Not connected to process.");
