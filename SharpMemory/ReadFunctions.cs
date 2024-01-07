@@ -11,6 +11,7 @@ public class ReadFunctions
     delegate object BasicTypeConverter(Memory<byte> bytes);
 
     const int SIZE_512mb = 512 * 1024 * 1024;
+    byte[] reusableBuffer = new byte[SIZE_512mb];
 
     public ReadFunctions(Endianness endianness) => Endianness = endianness;
     Dictionary<Type, BasicTypeConverter> basicTypeConverterDict = new Dictionary<Type, BasicTypeConverter>
@@ -30,7 +31,7 @@ public class ReadFunctions
 
 
 
-    public T Read<T>(Address address, bool useVirtualProtect = true)
+    public T Read<T>(Address address, bool useVirtualProtect = false)
     {
         var read = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian;
 
@@ -69,14 +70,11 @@ public class ReadFunctions
     }
 
 
-    byte[] reusableBuffer;
-    public Memory<byte> ReadByteArrayLittleEndian(long address, uint sizeToRead, bool useVirtualProtect = true)
+    public Memory<byte> ReadByteArrayLittleEndian(long address, uint sizeToRead, bool useVirtualProtect = false)
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
             throw new System.Exception();
 
-        if(reusableBuffer == null || reusableBuffer.Length == 0)
-            reusableBuffer = new byte[SIZE_512mb];
 
         Memory<byte> memoryBuffer = new Memory<byte>(reusableBuffer);
         uint oldProtect = 0;
@@ -102,15 +100,10 @@ public class ReadFunctions
         return memoryBuffer;
     }
 
-    public void ClearBuffer() => reusableBuffer = null;
-
-    public Memory<byte> ReadByteArrayDefaultEndian(long address, uint sizeToRead, bool useVirtualProtect = true)
+    public Memory<byte> ReadByteArrayDefaultEndian(long address, uint sizeToRead, bool useVirtualProtect = false)
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
             throw new System.Exception();
-
-        if(reusableBuffer == null || reusableBuffer.Length < sizeToRead)
-            reusableBuffer = new byte[sizeToRead];
 
         Memory<byte> memoryBuffer = new Memory<byte>(reusableBuffer);
         uint oldProtect = 0;

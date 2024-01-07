@@ -11,7 +11,7 @@ public class WriteFunctions
 
     public WriteFunctions(Endianness endianness) => Endianness = endianness;
 
-    public bool Write<T>(Address address, T value, bool useVirtualProtect = true)
+    public bool Write<T>(Address address, T value, bool useVirtualProtect = false)
     {
         if(value == null)
             return false;
@@ -36,7 +36,7 @@ public class WriteFunctions
         return byteDataToWrite == null ? false : WriteByteArray(address.value, byteDataToWrite, useVirtualProtect);
     }
 
-    public bool WriteByteArray(long address, byte[] value, bool useVirtualProtect = true)
+    public bool WriteByteArray(long address, byte[] value, bool useVirtualProtect = false)
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
             return false;
@@ -69,11 +69,11 @@ public class WriteFunctions
     }
 
 
-    public bool WriteStringAscii(long address, string text, bool useVirtualProtect = true) => WriteByteArray(address, Encoding.ASCII.GetBytes(text), useVirtualProtect);
+    public bool WriteStringAscii(long address, string text, bool useVirtualProtect = false) => WriteByteArray(address, Encoding.ASCII.GetBytes(text), useVirtualProtect);
 
-    public bool WriteStringUnicode(long address, string text, bool useVirtualProtect = true) => WriteByteArray(address, Encoding.Unicode.GetBytes(text), useVirtualProtect);
+    public bool WriteStringUnicode(long address, string text, bool useVirtualProtect = false) => WriteByteArray(address, Encoding.Unicode.GetBytes(text), useVirtualProtect);
 
-    public bool WriteNop(long address, int numOfBytes, bool useVirtualProtect = true)
+    public bool WriteNop(long address, int numOfBytes, bool useVirtualProtect = false)
     {
         byte[] nopBuffer = new byte[numOfBytes];
         for(int i = 0; i < numOfBytes; i++)

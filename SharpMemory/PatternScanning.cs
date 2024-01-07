@@ -83,7 +83,7 @@ public class PatternScanning
         return result;
     }
 
-    public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress, bool useVirtualProtect = true)
+    public bool PatternScanModule(ProcessModule module, string pattern, out long patternAddress, bool useVirtualProtect = false)
     {
         patternAddress = -1;
         long baseAddress = (long)module.BaseAddress;
