@@ -11,7 +11,8 @@ public class ReadFunctions
     delegate object BasicTypeConverter(Memory<byte> bytes);
 
     const int SIZE_512mb = 512 * 1024 * 1024;
-    byte[] reusableBuffer = new byte[SIZE_512mb];
+    const int SIZE_128mb = 128 * 1024 * 1024;
+    byte[] reusableBuffer = new byte[SIZE_128mb];
 
     public ReadFunctions(Endianness endianness) => Endianness = endianness;
     Dictionary<Type, BasicTypeConverter> basicTypeConverterDict = new Dictionary<Type, BasicTypeConverter>
@@ -29,8 +30,6 @@ public class ReadFunctions
         { typeof(Double),  bytes => BitConverter.ToDouble( bytes.Span) },
     };
 
-
-
     public T Read<T>(Address address, bool useVirtualProtect = false)
     {
         var read = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian;
@@ -41,7 +40,6 @@ public class ReadFunctions
             Memory<byte> memoryData = ReadByteArrayDefaultEndian(address.value, (uint)Marshal.SizeOf(typeof(T)), useVirtualProtect);
             return (T)converter(memoryData);
         }
-
 
         if(typeof(T) == typeof(Vector2) || typeof(T) == typeof(Vector3))
         {
@@ -68,7 +66,6 @@ public class ReadFunctions
 
         return (T)(object)null!;
     }
-
 
     public Memory<byte> ReadByteArrayLittleEndian(long address, uint sizeToRead, bool useVirtualProtect = false)
     {
@@ -117,9 +114,7 @@ public class ReadFunctions
             memoryBuffer = memoryBuffer.Slice(0, (int)bytesRead);
 
             if(Endianness == Endianness.BigEndian)
-            {
                 memoryBuffer.Span.Reverse();
-            }
         }
         catch(Exception ex)
         {

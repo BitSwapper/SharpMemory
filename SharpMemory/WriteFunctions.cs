@@ -48,10 +48,7 @@ public class WriteFunctions
         try
         {
             if(Endianness == Endianness.BigEndian)
-            {
-                // Reverse the byte array before writing
                 Array.Reverse(value);
-            }
 
             if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, PROT_PAGE_READWRITE, out originalPageProtection);
 
@@ -67,7 +64,6 @@ public class WriteFunctions
         }
         return bResult;
     }
-
 
     public bool WriteStringAscii(long address, string text, bool useVirtualProtect = false) => WriteByteArray(address, Encoding.ASCII.GetBytes(text), useVirtualProtect);
 
