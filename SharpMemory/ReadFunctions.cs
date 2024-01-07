@@ -12,6 +12,7 @@ public class ReadFunctions
     public ReadFunctions(Endianness endianness) => Endianness = endianness;
 
 
+
     public T Read<T>(Address address, bool useVirtualProtect = true)
     {
         var read = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian;
