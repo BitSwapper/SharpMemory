@@ -8,9 +8,23 @@ namespace SharpMemory;
 public class ReadFunctions
 {
     Endianness Endianness;
+    delegate object BasicTypeConverter(byte[] bytes);
 
     public ReadFunctions(Endianness endianness) => Endianness = endianness;
-
+    Dictionary<Type, BasicTypeConverter> converters = new Dictionary<Type, BasicTypeConverter>
+    {
+        { typeof(Byte),    bytes => bytes[0] },
+        { typeof(Char),    bytes => BitConverter.ToChar(bytes) },
+        { typeof(Boolean), bytes => BitConverter.ToBoolean(bytes) },
+        { typeof(Int16),   bytes => BitConverter.ToInt16(bytes) },
+        { typeof(Int32),   bytes => BitConverter.ToInt32(bytes) },
+        { typeof(Int64),   bytes => BitConverter.ToInt64(bytes) },
+        { typeof(UInt16),  bytes => BitConverter.ToUInt16(bytes) },
+        { typeof(UInt32),  bytes => BitConverter.ToUInt32(bytes) },
+        { typeof(UInt64),  bytes => BitConverter.ToUInt64(bytes) },
+        { typeof(Single),  bytes => BitConverter.ToSingle(bytes) },
+        { typeof(Double),  bytes => BitConverter.ToDouble(bytes) },
+    };
 
 
     public T Read<T>(Address address, bool useVirtualProtect = true)
@@ -19,18 +33,11 @@ public class ReadFunctions
 
         if(typeof(T).IsBasicType())
         {
-            if(typeof(T)      == typeof(Byte))    return (T)(object)read(address.value, sizeof(Byte), useVirtualProtect)[0];
-            else if(typeof(T) == typeof(Char))    return (T)(object)BitConverter.ToChar(read(address.value, sizeof(Char), useVirtualProtect));
-            else if(typeof(T) == typeof(Boolean)) return (T)(object)BitConverter.ToBoolean(read(address.value, sizeof(Boolean), useVirtualProtect));
-            else if(typeof(T) == typeof(Int16))   return (T)(object)BitConverter.ToInt16(read(address.value, sizeof(Int16), useVirtualProtect));
-            else if(typeof(T) == typeof(Int32))   return (T)(object)BitConverter.ToInt32(read(address.value, sizeof(Int32), useVirtualProtect));
-            else if(typeof(T) == typeof(Int64))   return (T)(object)BitConverter.ToInt64(read(address.value, sizeof(Int64), useVirtualProtect));
-            else if(typeof(T) == typeof(UInt16))  return (T)(object)BitConverter.ToUInt16(read(address.value, sizeof(UInt16), useVirtualProtect));
-            else if(typeof(T) == typeof(UInt32))  return (T)(object)BitConverter.ToUInt32(read(address.value, sizeof(UInt32), useVirtualProtect));
-            else if(typeof(T) == typeof(UInt64))  return (T)(object)BitConverter.ToUInt64(read(address.value, sizeof(UInt64), useVirtualProtect));
-            else if(typeof(T) == typeof(Single))  return (T)(object)BitConverter.ToSingle(read(address.value, sizeof(Single), useVirtualProtect));
-            else if(typeof(T) == typeof(Double))  return (T)(object)BitConverter.ToDouble(read(address.value, sizeof(Double), useVirtualProtect));
+            BasicTypeConverter converter = converters[typeof(T)];
+            byte[] bytes = read(address.value, (uint)Marshal.SizeOf(typeof(T)), useVirtualProtect);
+            return (T)converter(bytes);
         }
+
 
         if(typeof(T) == typeof(Vector2))
         {
