@@ -5,9 +5,9 @@ public class ModuleFunctions
 {
     public long GetModuleAddress(string moduleName) => (long)GetModule(moduleName).BaseAddress;
 
-    public ProcessModule GetModule(string moduleName) => GetModuleInstances(moduleName).First();
+    public ProcessModule GetModule(string moduleName) => GetModuleAndDuplicates(moduleName).First();
 
-    public ProcessModule[] GetModuleInstances(string moduleName) => GetAllModules().Where(x => x.ModuleName.Equals(moduleName, StringComparison.InvariantCultureIgnoreCase)).ToArray();
+    public ProcessModule[] GetModuleAndDuplicates(string moduleName) => GetAllModules().Where(x => x.ModuleName.Equals(moduleName, StringComparison.InvariantCultureIgnoreCase)).ToArray();
     
     public ProcessModule[] GetAllModules()
     {

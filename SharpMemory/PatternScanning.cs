@@ -26,28 +26,6 @@ public class PatternScanning
         return possibleMatches.First();
     }
 
-    public long PatternScanManual(string pattern, string memDump)
-    {
-        byte[] dumpBytes = Encoding.ASCII.GetBytes(memDump);
-
-        long result = PatternScanManual(pattern, dumpBytes);
-
-        memDump = "";
-        dumpBytes = null;
-
-        return result;
-    }
-
-    public long PatternScanManual(string pattern, byte[] memDump)
-    {
-        byte[] patternBytes = ConvertHexStringToByteArray(pattern);
-        long result = PatternScan(patternBytes, memDump);
-
-        patternBytes = null;
-        memDump = null;
-        return result;
-    }
-
     public long PatternScan(byte[] patternBytes, Memory<byte> dumpBytes)
     {
         Span<byte> dumpSpan = dumpBytes.Span;
@@ -71,7 +49,6 @@ public class PatternScanning
 
         return -1;
     }
-
 
     public long PatternScanManual(string pattern, Memory<byte> memDump)
     {
@@ -127,13 +104,13 @@ public class PatternScanning
             hexString = "0" + hexString;
 
         int length = hexString.Length;
-        List<byte> bytes = new List<byte>();
+        List<byte> bytes = new();
 
         for(int i = 0; i < length; i += 2)
         {
             string byteString = hexString.Substring(i, 2);
 
-            if(byteString == "??")// Use a wildcard value for "??" bytes
+            if(byteString == "??")//wildcard
                 bytes.Add(0xFF);
             else
                 bytes.Add(byte.Parse(byteString, System.Globalization.NumberStyles.HexNumber));

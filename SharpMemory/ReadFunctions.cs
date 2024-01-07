@@ -130,7 +130,7 @@ public class ReadFunctions
         return memoryBuffer;
     }
 
-    public string ReadStringAscii(long address, uint size) => Encoding.ASCII.GetString(ReadByteArrayDefaultEndian(address, size).Span);
-    public string ReadStringUnicode(long address, uint size) => Encoding.Unicode.GetString(ReadByteArrayDefaultEndian(address, size).Span);
-    public string ReadStringUTF8(long address, uint size) => Encoding.UTF8.GetString(ReadByteArrayDefaultEndian(address, size).Span);
+    public string ReadStringAscii(long address, uint size, bool useVirtualProtect = false) => Encoding.ASCII.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span);
+    public string ReadStringUnicode(long address, uint size, bool useVirtualProtect = false) => Encoding.Unicode.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span);
+    public string ReadStringUTF8(long address, uint size, bool useVirtualProtect = false) => Encoding.UTF8.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span);
 }

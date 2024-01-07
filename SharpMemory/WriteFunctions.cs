@@ -6,10 +6,9 @@ namespace SharpMemory;
 public class WriteFunctions
 {
     public event Action WriteFailed;
-    uint PROT_PAGE_READWRITE => 0x04; //https://learn.microsoft.com/en-us/windows/win32/Memory/memory-protection-constants
     Endianness Endianness;
 
-    public WriteFunctions(Endianness endianness) => Endianness = endianness;
+    public WriteFunctions(Endianness endianness) => Endianness = endianness;  
 
     public bool Write<T>(Address address, T value, bool useVirtualProtect = false)
     {
@@ -28,7 +27,7 @@ public class WriteFunctions
             size = Marshal.SizeOf(typeof(T));
             byteDataToWrite = new byte[size];
 
-            var gcHandle = GCHandle.Alloc(value, GCHandleType.Pinned);
+            GCHandle gcHandle = GCHandle.Alloc(value, GCHandleType.Pinned);
             Marshal.Copy(gcHandle.AddrOfPinnedObject(), byteDataToWrite, 0, size);
             gcHandle.Free();
         }
@@ -43,18 +42,18 @@ public class WriteFunctions
 
         var procHandle = SharpMem.Inst.ProcessHandle;
         bool bResult = false;
-        uint originalPageProtection = 0;
+        uint ogPageProtection = 0;
 
         try
         {
             if(Endianness == Endianness.BigEndian)
                 Array.Reverse(value);
 
-            if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, PROT_PAGE_READWRITE, out originalPageProtection);
+            if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, PAGE_READWRITE, out ogPageProtection);
 
             bResult = WriteProcessMemory(procHandle, (IntPtr)address, value, (uint)value.Length, out uint bytesWritten);
 
-            if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, originalPageProtection, out uint dummy);
+            if(useVirtualProtect) VirtualProtectEx(procHandle, (IntPtr)address, (uint)value.Length, ogPageProtection, out uint _);
         }
         catch { bResult = false; }
         finally

@@ -28,7 +28,6 @@ public class SharpMem : IDisposable
     private static extern bool CloseHandle(IntPtr hObject);
     public void Dispose()
     {
-
         Process?.Dispose();
         ReadFuncs = null;
         WriteFuncs = null;
