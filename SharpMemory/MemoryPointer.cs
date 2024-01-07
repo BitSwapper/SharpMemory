@@ -21,7 +21,6 @@ public class MemoryPointer<T>
     {
         Address currentAddress = AddressBeingPointedTo;
 
-        // Add a validation check.
         if(currentAddress == 0)
             return default(T);
 

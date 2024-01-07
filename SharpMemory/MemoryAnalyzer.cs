@@ -71,11 +71,8 @@ public class MemoryAnalyzer
             currentAddress = (IntPtr)(startAddress + (long)memInfo.RegionSize);
         }
 
-        // Check if there's an unknown memory region at the end
         if(currentStartAddress != 0)
-        {
             unknownMemory.Add(currentStartAddress, currentEndAddress);
-        }
 
         return unknownMemory;
     }

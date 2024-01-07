@@ -51,17 +51,14 @@ public class ReadFunctions
             {
                 return (T)(object)new Vector2(
                     BitConverter.ToSingle(span.Slice(0, sizeof(Single))),
-                    BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single)))
-                );
+                    BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single))));
             }
-            else
-            {
-                return (T)(object)new Vector3(
-                    BitConverter.ToSingle(span.Slice(0, sizeof(Single))),
-                    BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single))),
-                    BitConverter.ToSingle(span.Slice(sizeof(Single) * 2, sizeof(Single)))
-                );
-            }
+
+            return (T)(object)new Vector3(
+                BitConverter.ToSingle(span.Slice(0, sizeof(Single))),
+                BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single))),
+                BitConverter.ToSingle(span.Slice(sizeof(Single) * 2, sizeof(Single)))
+            );
         }
 
         return (T)(object)null!;

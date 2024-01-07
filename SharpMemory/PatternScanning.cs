@@ -4,7 +4,7 @@ using System.Text;
 namespace SharpMemory;
 public class PatternScanning
 {
-    public Address FindPatternInDynaMappedModule(string pattern, bool shouldEndIn4Zeros = false)
+    public Address FindPatternInDynaMappedModule(string pattern, string endsWith = "")//endsWith 0000 for example for 007 AuF; any emulated mirror will end in 4 zeros
     {
         var modules = SharpMem.Inst.ModuleFuncs.GetAllModules();
         var dynaMappedModules = SharpMem.Inst.MemoryAnalyzer.FindUnknownMemory(modules, SharpMem.Inst.ProcessHandle);
@@ -12,17 +12,19 @@ public class PatternScanning
         List<long> possibleMatches = new();
         foreach(var module in dynaMappedModules)
         {
-            uint moduleSize = (uint)(module.Value - module.Key);
-            Memory<byte> dumpBytes = SharpMem.Inst.ReadFuncs.ReadByteArrayLittleEndian(module.Key, moduleSize, false);
-
+            long moduleBaseAddress = module.Key;
+            long moduleEndAddress = module.Value;
+            uint moduleSize = (uint)(moduleEndAddress - moduleBaseAddress);//lord have mercy on me if a module is bigger than uint. too lazy to fix now :Skull:
+            Memory<byte> dumpBytes = SharpMem.Inst.ReadFuncs.ReadByteArrayLittleEndian(moduleBaseAddress, moduleSize, false);
 
             long resultStr = SharpMem.Inst.PatternScanning.PatternScanManual(pattern, dumpBytes);
             if(resultStr != -1)
-                possibleMatches.Add(module.Key + resultStr);
+                possibleMatches.Add(moduleBaseAddress + resultStr);
         }
 
-        if(shouldEndIn4Zeros)
-            return possibleMatches.Where(m => m.ToString("X").EndsWith("0000")).First();
+        if(endsWith != "")
+            return possibleMatches.Where(m => m.ToString("X").EndsWith(endsWith)).First();
+
         return possibleMatches.First();
     }
 

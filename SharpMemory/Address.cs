@@ -6,33 +6,31 @@
 
     public Address(Address address) => value = address.value;
 
-    // Implicit conversion from long to Address
+    // long to Address
     public static implicit operator Address(long offset) => new Address(offset);
 
-    // Implicit conversion from int to long to Address*
+    //int to long to Address*
     public static implicit operator Address(int offset) => new((long)offset);
 
-    // Implicit conversion from IntPtr to Address
+    //uint to long to Address*
+    public static implicit operator Address(uint offset) => new((long)offset);
+
+    //IntPtr to Address
     public static implicit operator Address(IntPtr offset) => new Address((long)offset);
 
-    // Implicit conversion from Address to long (for easy work with other numeric operations)
+    //Address to long 
     public static implicit operator long(Address address) => address.value;
 
 
     public static Address operator +(Address a, long b) => new Address(a.value + b);
 
-
     public static Address operator +(Address a, int b) => new Address(a.value + b);
-
 
     public static Address operator +(Address a, Address b) => new Address(a.value + b.value);
 
-
     public static Address operator -(Address a, long b) => new Address(a.value - b);
 
-
     public static Address operator -(Address a, int b) => new Address(a.value - b);
-
 
     public static Address operator -(Address a, Address b) => new Address(a.value - b.value);
 
@@ -58,11 +56,9 @@
 
     public static bool operator !=(Address left, Address right) => !(left == right);
 
-
     public override string ToString() => value.ToString();
+
     public string ToStringHex() => value.ToString("X");
-
-
 
 
     public override int GetHashCode() => value.GetHashCode();
