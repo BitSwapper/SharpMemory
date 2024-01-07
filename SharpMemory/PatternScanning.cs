@@ -88,7 +88,7 @@ public class PatternScanning
         patternAddress = -1;
         long baseAddress = (long)module.BaseAddress;
         uint size = (uint)module.ModuleMemorySize;
-        byte[] memDump = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian(baseAddress, size, useVirtualProtect);
+        Memory<byte> memDump = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian(baseAddress, size, useVirtualProtect);
 
         byte[] patternBytes = GetPatternBytes(pattern);
 
