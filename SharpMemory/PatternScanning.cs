@@ -2,7 +2,9 @@
 namespace SharpMemory;
 public class PatternScanning
 {
-    public Address FindPatternInDynaMappedModule(string pattern, int chunkSize = 80000, string endsWith = "")//may want endsWith 0000 for example for 007 AuF; any emulated mirror base will end in 4 zeros
+    const int SIZE_80kb = 80 * 1024;
+
+    public Address FindPatternInDynaMappedModule(string pattern, int chunkSize = SIZE_80kb, string endsWith = "")//may want endsWith 0000 for example for 007 AuF; any emulated mirror base will end in 4 zeros
     {
         var modules = SharpMem.Inst.ModuleFuncs.GetAllModules();
         var dynaMappedModules = SharpMem.Inst.MemoryAnalyzer.FindUnknownMemory(modules, SharpMem.Inst.ProcessHandle);

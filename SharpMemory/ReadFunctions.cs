@@ -10,9 +10,8 @@ public class ReadFunctions
     Endianness Endianness;
     delegate object BasicTypeConverter(Memory<byte> bytes);
 
-    const int SIZE_512mb = 512 * 1024 * 1024;
-    const int SIZE_128mb = 128 * 1024 * 1024;
-    byte[] reusableBuffer = new byte[SIZE_128mb];
+
+    byte[] reusableBuffer;
 
     public ReadFunctions(Endianness endianness) => Endianness = endianness;
     Dictionary<Type, BasicTypeConverter> basicTypeConverterDict = new Dictionary<Type, BasicTypeConverter>
@@ -69,6 +68,9 @@ public class ReadFunctions
         if(!SharpMem.Inst.IsConnectedToProcess)
             throw new Exception("Not connected to process.");
 
+        if(reusableBuffer == null || reusableBuffer.Length < chunkSize)
+            reusableBuffer = new byte[chunkSize];
+
         uint oldProtect = 0;
         int totalBytesRead = 0;
         int currentOffset = 0;
@@ -109,6 +111,9 @@ public class ReadFunctions
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
             throw new System.Exception();
+
+        if(reusableBuffer == null || reusableBuffer.Length < sizeToRead)
+            reusableBuffer = new byte[sizeToRead];
 
         Memory<byte> memoryBuffer = new Memory<byte>(reusableBuffer);
         uint oldProtect = 0;
