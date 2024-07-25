@@ -44,22 +44,22 @@ public class MemoryAnalyzer
 
             if(memInfo.State == 0x1000 && !IsInKnownModules(knownModules, startAddress, endAddress))
             {
-                // Memory region is committed and does not belong to any known modules
+                //Memory region is committed and does not belong to any known modules
                 if(currentStartAddress == 0)
                 {
-                    // Start of a new unknown memory region
+                    //Start of a new unknown memory region
                     currentStartAddress = startAddress;
                     currentEndAddress = endAddress;
                 }
                 else
                 {
-                    // Extend the current unknown memory region
+                    //Extend the current unknown memory region
                     currentEndAddress = endAddress;
                 }
             }
             else
             {
-                // End of the unknown memory region
+                //End of the unknown memory region
                 if(currentStartAddress != 0)
                 {
                     unknownMemory.Add(currentStartAddress, currentEndAddress);

@@ -76,11 +76,6 @@ public class ReadFunctions
         int currentOffset = 0;
         uint bytesRead = 0;
 
-
-        //Need to redo how VP is handled here
-        //if(useVirtualProtect)
-        //    VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out oldProtect);
-
         while(totalBytesRead < sizeToRead)
         {
             try
@@ -102,8 +97,6 @@ public class ReadFunctions
 
             yield return new Memory<byte>(reusableBuffer, 0, (int)bytesRead);
         }
-        //if(useVirtualProtect)
-        //    VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
     }
 
 

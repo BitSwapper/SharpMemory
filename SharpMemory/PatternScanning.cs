@@ -1,4 +1,5 @@
 ﻿using System.Diagnostics;
+using System.Numerics;
 namespace SharpMemory;
 public class PatternScanning
 {
@@ -36,21 +37,33 @@ public class PatternScanning
         return possibleMatches.First();
     }
 
-    public long PatternScan(byte[] patternBytes, Memory<byte> dumpBytes)
+
+    public static long PatternScan(byte[] patternBytes, Memory<byte> dumpBytes)
     {
         Span<byte> dumpSpan = dumpBytes.Span;
         int patternLength = patternBytes.Length;
         int dumpLength = dumpSpan.Length;
 
-        if(dumpLength >= patternLength)
+        if(patternLength == 0 || dumpLength < patternLength)
         {
-            for(int i = 0; i <= dumpLength - patternLength; i++)
-            {
-                bool found = true;
+            return -1;
+        }
 
-                for(int j = 0; j < patternLength; j++)
+        int lastPatternByte = patternLength - 1;
+        byte lastPatternByteValue = patternBytes[lastPatternByte];
+        int lastIndex = dumpLength - patternLength;
+
+        for(int i = 0; i <= lastIndex; i++)
+        {
+            //First, check the last byte to quickly skip non-matching sections
+            if(dumpSpan[i + lastPatternByte] == lastPatternByteValue || lastPatternByteValue == 0xFF)
+            {
+                //Then, compare the entire pattern starting from the last match
+                bool found = true;
+                for(int j = lastPatternByte - 1; j >= 0; j--)
                 {
-                    if(patternBytes[j] != 0xFF && patternBytes[j] != dumpSpan[(int)(i + j)])
+                    byte patternByte = patternBytes[j];
+                    if(patternByte != 0xFF && patternByte != dumpSpan[i + j])
                     {
                         found = false;
                         break;
@@ -58,12 +71,15 @@ public class PatternScanning
                 }
 
                 if(found)
+                {
                     return i;
+                }
             }
         }
 
         return -1;
     }
+
 
     public long PatternScanManual(string pattern, Memory<byte> memDump)
     {
@@ -114,9 +130,7 @@ public class PatternScanning
     byte[] ConvertHexStringToByteArray(string hexString)
     {
         hexString = hexString.Replace(" ", "");
-
-        if(hexString.Length % 2 != 0)// Pad with a leading zero if the length is odd
-            hexString = "0" + hexString;
+        hexString = PadWithZeroIfOddLength(hexString);
 
         int length = hexString.Length;
         List<byte> bytes = new();
@@ -132,5 +146,43 @@ public class PatternScanning
         }
 
         return bytes.ToArray();
+
+        static string PadWithZeroIfOddLength(string hexString)
+        {
+            if(hexString.Length % 2 != 0)
+                hexString = "0" + hexString;
+            return hexString;
+        }
     }
 }
+
+
+
+//public long PatternScanOld(byte[] patternBytes, Memory<byte> dumpBytes)
+//{
+//    Span<byte> dumpSpan = dumpBytes.Span;
+//    int patternLength = patternBytes.Length;
+//    int dumpLength = dumpSpan.Length;
+
+//    if(dumpLength >= patternLength)
+//    {
+//        for(int i = 0; i <= dumpLength - patternLength; i++)
+//        {
+//            bool found = true;
+
+//            for(int j = 0; j < patternLength; j++)
+//            {
+//                if(patternBytes[j] != 0xFF && patternBytes[j] != dumpSpan[(int)(i + j)])
+//                {
+//                    found = false;
+//                    break;
+//                }
+//            }
+
+//            if(found)
+//                return i;
+//        }
+//    }
+
+//    return -1;
+//}
