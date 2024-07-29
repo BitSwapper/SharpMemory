@@ -14,6 +14,7 @@ public class ReadFunctions
     byte[] reusableBuffer;
 
     public ReadFunctions(Endianness endianness) => Endianness = endianness;
+
     Dictionary<Type, BasicTypeConverter> basicTypeConverterDict = new Dictionary<Type, BasicTypeConverter>
     {
         { typeof(Byte),    bytes => bytes.Span[0] },
@@ -33,12 +34,17 @@ public class ReadFunctions
     {
         var read = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian;
 
-        if(typeof(T).IsBasicType())
+        try
         {
-            BasicTypeConverter converter = basicTypeConverterDict[typeof(T)];
-            Memory<byte> memoryData = ReadByteArrayDefaultEndian(address.value, (uint)Marshal.SizeOf(typeof(T)), useVirtualProtect);
-            return (T)converter(memoryData);
+            if(typeof(T).IsBasicType())
+            {
+                BasicTypeConverter converter = basicTypeConverterDict[typeof(T)];
+                Memory<byte> memoryData = ReadByteArrayDefaultEndian(address.value, (uint)Marshal.SizeOf(typeof(T)), useVirtualProtect);
+                return (T)converter(memoryData);
+            }
         }
+        catch { }
+
 
         if(typeof(T) == typeof(Vector2) || typeof(T) == typeof(Vector3))
         {
@@ -60,7 +66,7 @@ public class ReadFunctions
             );
         }
 
-        return (T)(object)null!;
+        return default(T);
     }
 
     public IEnumerable<Memory<byte>> ReadByteArrayChunkedLittleEndian(long address, uint sizeToRead, int chunkSize, bool useVirtualProtect = false)
