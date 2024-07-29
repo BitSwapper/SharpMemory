@@ -109,7 +109,7 @@ public class ReadFunctions
     public Memory<byte> ReadByteArrayDefaultEndian(long address, uint sizeToRead, bool useVirtualProtect = false)
     {
         if(!SharpMem.Inst.IsConnectedToProcess)
-            throw new System.Exception();
+            throw new Exception("Not connected to process.");
 
         if(reusableBuffer == null || reusableBuffer.Length < sizeToRead)
             reusableBuffer = new byte[sizeToRead];

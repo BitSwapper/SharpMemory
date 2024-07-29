@@ -86,9 +86,9 @@ public class SharpMem : IDisposable
 
     void OnWriteFailed()
     {
-        IsConnectedToProcess = false;
-        ProcessHandle = default;
-        Process = null;
+        //IsConnectedToProcess = false;
+        //ProcessHandle = default;
+        //Process = null;
     }
 
 
