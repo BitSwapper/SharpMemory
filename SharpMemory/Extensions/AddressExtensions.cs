@@ -5,8 +5,11 @@ namespace SharpMemory;
 
 public static class AddressExtensions
 {
-    public static bool Write<T>(this Address address, T value, bool useVirtualProtect = false) => SharpMem.Inst.WriteFuncs.Write<T>(address, value, useVirtualProtect);
-    public static T Read<T>(this Address address, bool useVirtualProtect = false) => SharpMem.Inst.ReadFuncs.Read<T>(address, useVirtualProtect);
+    static SharpMem SharpMem { get; set; }
+    public static void Initialize(SharpMem sharpMem) => SharpMem = sharpMem ?? throw new ArgumentNullException(nameof(sharpMem));
+
+    public static bool Write<T>(this Address address, T value, bool useVirtualProtect = false) => SharpMem.WriteFuncs.Write<T>(address, value, useVirtualProtect);
+    public static T Read<T>(this Address address, bool useVirtualProtect = false) => SharpMem.ReadFuncs.Read<T>(address, useVirtualProtect);
 
     public static void WriteVector2(this Address address, Vector3 value, bool useVirtualProtect = false)
     {
@@ -36,7 +39,7 @@ public static class AddressExtensions
         return new Vector3(X, Y, Z);
     }
 
-    public static string ReadStringAscii(long address, uint size, bool useVirtualProtect = false) => SharpMem.Inst.ReadFuncs.ReadStringAscii(address, size, useVirtualProtect);
-    public static string ReadStringUnicode(long address, uint size, bool useVirtualProtect = false) => SharpMem.Inst.ReadFuncs.ReadStringUnicode(address, size, useVirtualProtect);
-    public static string ReadStringUTF8(long address, uint size, bool useVirtualProtect = false) => SharpMem.Inst.ReadFuncs.ReadStringUTF8(address, size, useVirtualProtect);
+    public static string ReadStringAscii(long address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringAscii(address, size, useVirtualProtect);
+    public static string ReadStringUnicode(long address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringUnicode(address, size, useVirtualProtect);
+    public static string ReadStringUTF8(long address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringUTF8(address, size, useVirtualProtect);
 }

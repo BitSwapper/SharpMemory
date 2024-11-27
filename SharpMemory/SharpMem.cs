@@ -1,102 +1,122 @@
 ﻿using System.Diagnostics;
 using SharpMemory.Enums;
+using SharpMemory.Interfaces;
 using static SharpMemory.Native.NativeData;
 
 namespace SharpMemory;
 
-public class SharpMem : IDisposable
-{
-    static readonly SharpMem instance = new();
-    public static SharpMem Inst => instance;
 
-    public bool IsConnectedToProcess { get; private set; } = false;
-    public string? ProcessName { get; private set; }
-    public Process? Process { get; private set; }
+public sealed class SharpMem : ISharpMem
+{
+    readonly static SharpMem sharpMemInst;
+    public bool IsConnectedToProcess { get; }
+    public string ProcessName { get; }
+    public Process? Process { get; }
     public IntPtr ProcessHandle { get; private set; }
 
     public ReadFunctions ReadFuncs { get; private set; }
     public WriteFunctions WriteFuncs { get; private set; }
-    public ModuleFunctions ModuleFuncs { get; private set; } = new();
-    public PatternScanning PatternScanning { get; private set; } = new();
-    public MemoryAnalyzer MemoryAnalyzer { get; private set; } = new();
-    public MemoryAllocator MemoryAllocator { get; private set; } = new();
-    //public TrampolineHook TrampolineHook { get; private set; } = new();
+    public ModuleFunctions ModuleFuncs { get; init; }
+    public PatternScanning PatternScanning { get; init; }
+    public MemoryAnalyzer MemoryAnalyzer { get; } = new();
+    public MemoryAllocator MemoryAllocator { get; } = new();
 
-    bool hasInitializedEvents = false;
+    bool _disposed;
+    bool _hasInitializedEvents;
 
-    [System.Runtime.InteropServices.DllImport("kernel32.dll")]
-    private static extern bool CloseHandle(IntPtr hObject);
+    public SharpMem(string processName, ProcessAccessFlags flags, Endianness endianness = Endianness.LittleEndian)
+    {
+        ProcessName = processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase) ? processName[..^4]: processName;
+
+        Process = GetProcess();
+        if(Process is null)
+            throw new ProcessNotFoundException($"Process '{ProcessName}' was not found.");
+
+        ProcessHandle = OpenProcess((uint)flags, false, Process.Id);
+        if(ProcessHandle == IntPtr.Zero)
+            throw new ProcessAccessException($"Failed to get required access to process '{ProcessName}'.");
+
+        IsConnectedToProcess = true;
+        InitReadWriteFuncs(endianness);
+        InitializeEvents();
+        ModuleFuncs = new(this);
+        PatternScanning = new PatternScanning(this);
+        AddressExtensions.Initialize(this);
+    }
+
     public void Dispose()
     {
+        if(_disposed) return;
+
         Process?.Dispose();
-        ReadFuncs = null;
-        WriteFuncs = null;
-        ModuleFuncs = null;
-        PatternScanning = null;
-        MemoryAnalyzer = null;
-        MemoryAllocator = null;
+        ReadFuncs = null!;
+        WriteFuncs = null!;
 
         if(ProcessHandle != IntPtr.Zero)
         {
             CloseHandle(ProcessHandle);
             ProcessHandle = IntPtr.Zero;
         }
+
+        _disposed = true;
         GC.SuppressFinalize(this);
     }
 
-    public void SetToBigEndian() => InitReadWriteFuncs(Endianness.BigEndian);
-
-    public void SetLittleEndian() => InitReadWriteFuncs(Endianness.LittleEndian);
-
-    public bool Initialize(string processName, ProcessAccessFlags flags, Endianness endianness)
+    public void SetEndianness(Endianness endianness)
     {
-        ProcessName = processName.EndsWith(".exe", StringComparison.OrdinalIgnoreCase)
-                      ? processName.Substring(0, processName.Length - 4)
-                      : processName;
-
-        IsConnectedToProcess = OpenProc(flags);
-
+        ThrowIfDisposed();
         InitReadWriteFuncs(endianness);
+    }
 
-        if(!hasInitializedEvents)
-            WriteFuncs.WriteFailed += OnWriteFailed;
-
-        hasInitializedEvents = true;
-
-        return IsConnectedToProcess;
+    Process? GetProcess()
+    {
+        try
+        {
+            return Process.GetProcessesByName(ProcessName)[0];
+        }
+        catch(IndexOutOfRangeException)
+        {
+            return null;
+        }
     }
 
     void InitReadWriteFuncs(Endianness endianness)
     {
-        ReadFuncs = new(endianness);
-        WriteFuncs = new(endianness);
+        ReadFuncs = new ReadFunctions(this, endianness);
+        WriteFuncs = new WriteFunctions(this, endianness);
     }
 
-    private bool OpenProc(ProcessAccessFlags flags)
+    void InitializeEvents()
     {
-        try { Process = Process.GetProcessesByName(ProcessName)[0]; }
-        catch { Process = null; }
-
-        if(Process != null)
-            ProcessHandle = OpenProcess((uint)flags, false, Process.Id);
-        else
-            return false;
-        return true;
+        if(!_hasInitializedEvents)
+        {
+            WriteFuncs.WriteFailed += OnWriteFailed;
+            _hasInitializedEvents = true;
+        }
     }
 
     void OnWriteFailed()
     {
-        //IsConnectedToProcess = false;
-        //ProcessHandle = default;
-        //Process = null;
     }
 
-
+    void ThrowIfDisposed()
+    {
+        if(_disposed)
+            throw new ObjectDisposedException(nameof(SharpMem));
+    }
 
     ~SharpMem()
     {
         Dispose();
     }
+}
 
+public class ProcessNotFoundException : Exception
+{
+    public ProcessNotFoundException(string message) : base(message) { }
+}
 
+public class ProcessAccessException : Exception
+{
+    public ProcessAccessException(string message) : base(message) { }
 }

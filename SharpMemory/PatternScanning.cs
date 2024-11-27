@@ -4,11 +4,17 @@ namespace SharpMemory;
 public class PatternScanning
 {
     const int SIZE_80kb = 80 * 1024;
+    SharpMem SharpMem { get; init; }
+
+    public PatternScanning(SharpMem sharpMem)
+    {
+        SharpMem = sharpMem;
+    }
 
     public Address FindPatternInDynaMappedModule(string pattern, int chunkSize = SIZE_80kb, string endsWith = "")//may want endsWith 0000 for example for 007 AuF; any emulated mirror base will end in 4 zeros
     {
-        var modules = SharpMem.Inst.ModuleFuncs.GetAllModules();
-        var dynaMappedModules = SharpMem.Inst.MemoryAnalyzer.FindUnknownMemory(modules, SharpMem.Inst.ProcessHandle);
+        var modules = SharpMem.ModuleFuncs.GetAllModules();
+        var dynaMappedModules = SharpMem.MemoryAnalyzer.FindUnknownMemory(modules, SharpMem.ProcessHandle);
 
         List<long> possibleMatches = new();
         foreach(var module in dynaMappedModules)
@@ -18,9 +24,9 @@ public class PatternScanning
             uint moduleSize = (uint)(moduleEndAddress - moduleBaseAddress);//lord have mercy on me if a module is bigger than uint. too lazy to fix now :Skull:
             long currentModulePositionOffset = 0;
 
-            foreach(var chunk in SharpMem.Inst.ReadFuncs.ReadByteArrayChunkedLittleEndian(moduleBaseAddress, moduleSize, chunkSize, false))
+            foreach(var chunk in SharpMem.ReadFuncs.ReadByteArrayChunkedLittleEndian(moduleBaseAddress, moduleSize, chunkSize, false))
             {
-                long resultStr = SharpMem.Inst.PatternScanning.PatternScanManual(pattern, chunk);
+                long resultStr = SharpMem.PatternScanning.PatternScanManual(pattern, chunk);
                 if(resultStr != -1)
                 {
                     possibleMatches.Add(moduleBaseAddress + currentModulePositionOffset + resultStr);
@@ -96,7 +102,7 @@ public class PatternScanning
         patternAddress = -1;
         long baseAddress = (long)module.BaseAddress;
         uint size = (uint)module.ModuleMemorySize;
-        Memory<byte> memDump = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian(baseAddress, size, useVirtualProtect);
+        Memory<byte> memDump = SharpMem.ReadFuncs.ReadByteArrayDefaultEndian(baseAddress, size, useVirtualProtect);
 
         byte[] patternBytes = GetPatternBytes(pattern);
 

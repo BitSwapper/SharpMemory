@@ -7,8 +7,12 @@ public class WriteFunctions
 {
     public event Action WriteFailed;
     Endianness Endianness;
-
-    public WriteFunctions(Endianness endianness) => Endianness = endianness;  
+    SharpMem SharpMem { get; init; }
+    public WriteFunctions(SharpMem sharpMem, Endianness endianness)
+    {
+        SharpMem = sharpMem;
+        Endianness = endianness;
+    }
 
     public bool Write<T>(Address address, T value, bool useVirtualProtect = false)
     {
@@ -37,10 +41,10 @@ public class WriteFunctions
 
     public bool WriteByteArray(long address, byte[] value, bool useVirtualProtect = false)
     {
-        if(!SharpMem.Inst.IsConnectedToProcess)
+        if(!SharpMem.IsConnectedToProcess)
             return false;
 
-        var procHandle = SharpMem.Inst.ProcessHandle;
+        var procHandle = SharpMem.ProcessHandle;
         bool bResult = false;
         uint ogPageProtection = 0;
 

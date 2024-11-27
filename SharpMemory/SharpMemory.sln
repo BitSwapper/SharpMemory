@@ -5,6 +5,8 @@ VisualStudioVersion = 17.3.32922.545
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SharpMemory", "SharpMemory.csproj", "{2C05D20F-C127-4CEE-AFA2-6FA199BABBE8}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SharpMemTests", "..\SharpMemTests\SharpMemTests.csproj", "{D975F2C6-95D8-446F-B750-FD6D736DAD1E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,18 @@ Global
 		{2C05D20F-C127-4CEE-AFA2-6FA199BABBE8}.Release|x64.Build.0 = Release|x64
 		{2C05D20F-C127-4CEE-AFA2-6FA199BABBE8}.Release|x86.ActiveCfg = Release|x86
 		{2C05D20F-C127-4CEE-AFA2-6FA199BABBE8}.Release|x86.Build.0 = Release|x86
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Debug|x64.Build.0 = Debug|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Debug|x86.Build.0 = Debug|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Release|x64.ActiveCfg = Release|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Release|x64.Build.0 = Release|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Release|x86.ActiveCfg = Release|Any CPU
+		{D975F2C6-95D8-446F-B750-FD6D736DAD1E}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

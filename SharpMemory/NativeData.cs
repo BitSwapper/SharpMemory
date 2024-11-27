@@ -27,4 +27,5 @@ public static class NativeData
     [DllImport("kernel32.dll")] public static extern bool WriteProcessMemory(IntPtr processHandle, IntPtr baseAddress, byte[] byteArrayBuffer, uint size, out uint numberOfBytesRead);
     [DllImport("kernel32.dll")] public static extern bool VirtualProtectEx(IntPtr processHandle, IntPtr baseAddress, uint size, uint newProtection, out uint oldProtection);
     [DllImport("kernel32.dll")] public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
+    [DllImport("kernel32.dll")] public static extern bool CloseHandle(IntPtr hObject);
 }

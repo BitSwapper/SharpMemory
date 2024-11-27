@@ -3,6 +3,11 @@
 namespace SharpMemory;
 public class ModuleFunctions
 {
+    SharpMem SharpMem { get; init; }
+    public ModuleFunctions(SharpMem sharpMem)
+    {
+        SharpMem = sharpMem;
+    }
     public long GetModuleAddress(string moduleName) => (long)GetModule(moduleName).BaseAddress;
 
     public ProcessModule GetModule(string moduleName) => GetModuleAndDuplicates(moduleName).First();
@@ -14,9 +19,9 @@ public class ModuleFunctions
         try
         {
             List<ProcessModule> list = new();
-            for(int i = 0; i < SharpMem.Inst.Process.Modules.Count; i++)
-                if(SharpMem.Inst.Process.Modules[i] != null)
-                    list.Add(SharpMem.Inst.Process.Modules[i]);
+            for(int i = 0; i < SharpMem.Process.Modules.Count; i++)
+                if(SharpMem.Process.Modules[i] != null)
+                    list.Add(SharpMem.Process.Modules[i]);
             return list.ToArray();
         }
         catch(Exception ex)

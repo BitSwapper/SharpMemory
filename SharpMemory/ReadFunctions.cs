@@ -7,14 +7,19 @@ using static SharpMemory.Native.NativeData;
 namespace SharpMemory;
 public class ReadFunctions
 {
+    SharpMem SharpMem { get; init; }
+
     Endianness Endianness;
     delegate object BasicTypeConverter(Memory<byte> bytes);
 
 
     byte[] reusableBuffer;
 
-    public ReadFunctions(Endianness endianness) => Endianness = endianness;
-
+    public ReadFunctions(SharpMem sharpMem, Endianness endianness)
+    {
+        SharpMem = sharpMem;
+        Endianness = endianness;
+    }
     Dictionary<Type, BasicTypeConverter> basicTypeConverterDict = new Dictionary<Type, BasicTypeConverter>
     {
         { typeof(Byte),    bytes => bytes.Span[0] },
@@ -32,7 +37,7 @@ public class ReadFunctions
 
     public T Read<T>(Address address, bool useVirtualProtect = false)
     {
-        var read = SharpMem.Inst.ReadFuncs.ReadByteArrayDefaultEndian;
+        var read = SharpMem.ReadFuncs.ReadByteArrayDefaultEndian;
 
         try
         {
@@ -71,7 +76,7 @@ public class ReadFunctions
 
     public IEnumerable<Memory<byte>> ReadByteArrayChunkedLittleEndian(long address, uint sizeToRead, int chunkSize, bool useVirtualProtect = false)
     {
-        if(!SharpMem.Inst.IsConnectedToProcess)
+        if(!SharpMem.IsConnectedToProcess)
             throw new Exception("Not connected to process.");
 
         if(reusableBuffer == null || reusableBuffer.Length < chunkSize)
@@ -87,7 +92,7 @@ public class ReadFunctions
             try
             {
                 uint bytesToRead = (uint)Math.Min(chunkSize, sizeToRead - totalBytesRead);
-                ReadProcessMemory(SharpMem.Inst.ProcessHandle, (IntPtr)(address + currentOffset), reusableBuffer, bytesToRead, out bytesRead);
+                ReadProcessMemory(SharpMem.ProcessHandle, (IntPtr)(address + currentOffset), reusableBuffer, bytesToRead, out bytesRead);
             }
             catch(Exception ex)
             {
@@ -108,7 +113,7 @@ public class ReadFunctions
 
     public Memory<byte> ReadByteArrayDefaultEndian(long address, uint sizeToRead, bool useVirtualProtect = false)
     {
-        if(!SharpMem.Inst.IsConnectedToProcess)
+        if(!SharpMem.IsConnectedToProcess)
             throw new Exception("Not connected to process.");
 
         if(reusableBuffer == null || reusableBuffer.Length < sizeToRead)
@@ -118,11 +123,11 @@ public class ReadFunctions
         uint oldProtect = 0;
 
         if(useVirtualProtect)
-            VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out oldProtect);
+            VirtualProtectEx(SharpMem.ProcessHandle, (IntPtr)address, sizeToRead, PAGE_READWRITE, out oldProtect);
 
         try
         {
-            ReadProcessMemory(SharpMem.Inst.ProcessHandle, (IntPtr)address, reusableBuffer, sizeToRead, out uint bytesRead);
+            ReadProcessMemory(SharpMem.ProcessHandle, (IntPtr)address, reusableBuffer, sizeToRead, out uint bytesRead);
             memoryBuffer = memoryBuffer.Slice(0, (int)bytesRead);
 
             if(Endianness == Endianness.BigEndian)
@@ -136,7 +141,7 @@ public class ReadFunctions
         finally
         {
             if(useVirtualProtect)
-                VirtualProtectEx(SharpMem.Inst.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
+                VirtualProtectEx(SharpMem.ProcessHandle, (IntPtr)address, sizeToRead, oldProtect, out _);
         }
 
         return memoryBuffer;
