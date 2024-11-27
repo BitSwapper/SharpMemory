@@ -117,7 +117,7 @@ public class PatternScanning
         return false;
     }
 
-    byte[] GetPatternBytes(string pattern)
+    public byte[] GetPatternBytes(string pattern)
     {
         string[] hexStrings = pattern.Split(' ');
         byte[] bytes = new byte[hexStrings.Length];
@@ -133,7 +133,7 @@ public class PatternScanning
         return bytes;
     }
 
-    byte[] ConvertHexStringToByteArray(string hexString)
+    public byte[] ConvertHexStringToByteArray(string hexString)
     {
         hexString = hexString.Replace(" ", "");
         hexString = PadWithZeroIfOddLength(hexString);
