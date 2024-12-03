@@ -67,7 +67,12 @@
 
     public override string ToString() => value.ToString();
 
-    public string ToStringHex() => value.ToString("X");
+    public string ToString(string format)
+    {
+        if(string.IsNullOrEmpty(format)) return ToString();
+
+        return value.ToString(format);
+    }
 
     public override int GetHashCode() => value.GetHashCode();
 }
