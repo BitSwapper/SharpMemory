@@ -8,8 +8,8 @@ Module scanning / retrieval.
 Pattern scanning.
 Multi level pointer support.
 
-*Instead of storing memory addresses as ints, intptrs, or longs, users of this library should use the Address type to define address variables to obtain the full benefits.
-
+Define Addresses with the "Address" type (not int, long, intptr, etc.)
+Define Pointers with the "MemoryPointer<T>" type (use the MemoryPointer.AddressBeingPointedTo property to resolve a given pointer)
 
 Basic usage example depicting reading, writing, and pattern scanning.
 https://github.com/SleepyHex/SharpMemory/releases/tag/1.1
