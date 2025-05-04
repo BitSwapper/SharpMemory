@@ -1,20 +1,22 @@
 ﻿using System.Numerics;
-using SharpMemory;
+using SharpMemory.Enums;
 
-namespace HackingUtilities;
+namespace SharpMemory;
 
 public class MemoryPointer<T>
 {
-    public Address BaseAddress { get; set; }
     public Address AddressBeingPointedTo => DetermineBaseAddressOfPointerChain();
-    public int[] PointerOffsets { get; set; }
-    public int PositionalOffset { get; set; }
+    public Address BaseAddress { get; private init; }
+    public int[] PointerOffsets { get; private init; }
+    public int PositionalOffset { get; private init; }
+    BitType bitType { get; init; }
 
-    public MemoryPointer(Address address, int[] pointerOffsets, int positionalOffset = 0)
+    public MemoryPointer(Address address, int[] pointerOffsets, int positionalOffset = 0, BitType bitType = BitType.x64)
     {
         BaseAddress = address;
         PositionalOffset = positionalOffset;
         PointerOffsets = pointerOffsets;
+        this.bitType = bitType;
     }
 
     public T Read()
@@ -22,7 +24,7 @@ public class MemoryPointer<T>
         Address currentAddress = AddressBeingPointedTo;
 
         if(currentAddress == 0)
-            return default(T);
+            return default;
 
         if(typeof(T) == typeof(Vector3))
             return (T)(object)currentAddress.ReadVector3();
@@ -47,7 +49,10 @@ public class MemoryPointer<T>
 
         foreach(int offset in PointerOffsets)
         {
-            currentAddress = currentAddress.Read<long>();
+            if(bitType == BitType.x86)
+                currentAddress = currentAddress.Read<int>();
+            else
+                currentAddress = currentAddress.Read<long>();
 
             if(currentAddress == 0)
                 return 0;

@@ -137,11 +137,11 @@ public class PatternScanningTests : IDisposable
         var pattern = "4D 5A 90"; // DOS header magic numbers
 
         // Act
-        bool found = _patternScanning.PatternScanModule(module, pattern, out long patternAddress);
+        bool found = _patternScanning.PatternScanModule(module, pattern, out Address patternAddress);
 
         // Assert
         Assert.True(found);
-        Assert.Equal(module.BaseAddress.ToInt64(), patternAddress); // Should be at the start of the module
+        Assert.Equal(module.BaseAddress, patternAddress); // Should be at the start of the module
     }
 
     [Theory]

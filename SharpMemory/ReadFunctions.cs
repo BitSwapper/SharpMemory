@@ -9,10 +9,8 @@ public class ReadFunctions
 {
     SharpMem SharpMem { get; init; }
 
-    Endianness Endianness;
     delegate object BasicTypeConverter(Memory<byte> bytes);
-
-
+    Endianness Endianness;
     byte[] reusableBuffer;
 
     public ReadFunctions(SharpMem sharpMem, Endianness endianness)
@@ -20,6 +18,7 @@ public class ReadFunctions
         SharpMem = sharpMem;
         Endianness = endianness;
     }
+
     Dictionary<Type, BasicTypeConverter> basicTypeConverterDict = new Dictionary<Type, BasicTypeConverter>
     {
         { typeof(Byte),    bytes => bytes.Span[0] },
@@ -147,7 +146,13 @@ public class ReadFunctions
         return memoryBuffer;
     }
 
-    public string ReadStringAscii(long address, uint size, bool useVirtualProtect = false) => Encoding.ASCII.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span);
-    public string ReadStringUnicode(long address, uint size, bool useVirtualProtect = false) => Encoding.Unicode.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span);
-    public string ReadStringUTF8(long address, uint size, bool useVirtualProtect = false) => Encoding.UTF8.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span);
+    public string ReadStringAscii(long address, uint size, bool useVirtualProtect = false) => TrimProper(Encoding.ASCII.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span).TrimEnd());
+    public string ReadStringUnicode(long address, uint size, bool useVirtualProtect = false) => TrimProper(Encoding.Unicode.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span).TrimEnd());
+    public string ReadStringUTF8(long address, uint size, bool useVirtualProtect = false) => TrimProper(Encoding.UTF8.GetString(ReadByteArrayDefaultEndian(address, size, useVirtualProtect).Span).TrimEnd());
+    string TrimProper(string str)
+    {
+        if(str.Contains('\0'))
+            str = str.Substring(0, str.IndexOf('\0'));
+        return str;
+    }
 }

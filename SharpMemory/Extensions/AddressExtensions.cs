@@ -39,7 +39,7 @@ public static class AddressExtensions
         return new Vector3(X, Y, Z);
     }
 
-    public static string ReadStringAscii(long address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringAscii(address, size, useVirtualProtect);
-    public static string ReadStringUnicode(long address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringUnicode(address, size, useVirtualProtect);
-    public static string ReadStringUTF8(long address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringUTF8(address, size, useVirtualProtect);
+    public static string ReadStringAscii(this Address address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringAscii(address, size, useVirtualProtect);
+    public static string ReadStringUnicode(this Address address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringUnicode(address, size, useVirtualProtect);
+    public static string ReadStringUTF8(this Address address, uint size, bool useVirtualProtect = false) => SharpMem.ReadFuncs.ReadStringUTF8(address, size, useVirtualProtect);
 }

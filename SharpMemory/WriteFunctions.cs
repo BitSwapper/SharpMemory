@@ -16,7 +16,7 @@ public class WriteFunctions
 
     public bool Write<T>(Address address, T value, bool useVirtualProtect = false)
     {
-        if(value == null)
+        if(value == null || address == 0)
             return false;
 
         int size = 0;
