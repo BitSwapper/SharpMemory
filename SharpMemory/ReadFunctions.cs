@@ -5,6 +5,7 @@ using SharpMemory.Enums;
 using static SharpMemory.Native.NativeData;
 
 namespace SharpMemory;
+
 public class ReadFunctions
 {
     SharpMem SharpMem { get; init; }

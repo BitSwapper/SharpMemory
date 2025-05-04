@@ -59,8 +59,8 @@ public class AddressExtensionsTests : IDisposable
         var testVector = new Vector2(1.5f, 2.5f);
 
         // Act
-        baseAddress.WriteVector2(new Vector3(testVector.X, testVector.Y, 0));
-        var result = baseAddress.ReadVector2();
+        baseAddress.Write(new Vector3(testVector.X, testVector.Y, 0));
+        var result = baseAddress.Read<Vector2>();
 
         // Assert
         Assert.Equal(testVector.X, result.X);
@@ -75,8 +75,8 @@ public class AddressExtensionsTests : IDisposable
         var testVector = new Vector3(1.5f, 2.5f, 3.5f);
 
         // Act
-        baseAddress.WriteVector3(testVector);
-        var result = baseAddress.ReadVector3();
+        baseAddress.Write(testVector);
+        var result = baseAddress.Read<Vector3>();
 
         // Assert
         Assert.Equal(testVector.X, result.X);
@@ -124,7 +124,7 @@ public class AddressExtensionsTests : IDisposable
         var testVector = new Vector3(1.0f, 2.0f, 3.0f);
 
         // Act
-        baseAddress.WriteVector3(testVector);
+        baseAddress.Write(testVector);
 
         // Assert individual components with offsets
         Assert.Equal(testVector.X, (baseAddress + 0).Read<float>());

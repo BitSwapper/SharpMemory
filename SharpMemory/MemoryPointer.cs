@@ -26,9 +26,9 @@ public class MemoryPointer<T>
         if(currentAddress == 0)
             return default;
 
-        if(typeof(T) == typeof(Vector3))
-            return (T)(object)currentAddress.ReadVector3();
-        else
+        //if(typeof(T) == typeof(Vector3))
+        //    return (T)(object)currentAddress.ReadVector3();
+        //else
             return currentAddress.Read<T>();
     }
 
@@ -37,9 +37,9 @@ public class MemoryPointer<T>
         Address currentAddress = AddressBeingPointedTo;
         if(currentAddress == 0) return;
 
-        if(typeof(T) == typeof(Vector3))
-            currentAddress.WriteVector3((Vector3)(object)value!);
-        else
+       //if(typeof(T) == typeof(Vector3))
+       //    currentAddress.WriteVector3((Vector3)(object)value!);
+       //else
             currentAddress.Write(value);
     }
 
