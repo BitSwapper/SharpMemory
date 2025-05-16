@@ -1,4 +1,6 @@
-﻿public class Address
+﻿namespace SharpMemory;
+
+public class Address
 {
     public long value { get; set; }
 
@@ -65,11 +67,11 @@
         return false;
     }
 
-    public override string ToString() => value.ToString();
+    public override string ToString() => value.ToString("X");
 
     public string ToString(string format)
     {
-        if(string.IsNullOrEmpty(format)) return ToString();
+        if(string.IsNullOrEmpty(format)) return ToString("X");
 
         return value.ToString(format);
     }

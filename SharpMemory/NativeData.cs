@@ -21,6 +21,14 @@ public static class NativeData
     }
 
     public readonly static uint PAGE_READWRITE = 0x04;
+    public readonly static uint MEM_ExecuteReadWrite = 0x40;
+
+    [Flags]
+    public enum AllocationType
+    {
+        Commit = 0x1000,
+        Reserve = 0x2000
+    }
 
     [DllImport("kernel32.dll")] public static extern IntPtr OpenProcess(uint desiredAccess, bool bInheritHandle, int processId);
     [DllImport("kernel32.dll")] public static extern bool ReadProcessMemory(IntPtr processHandle, IntPtr baseAddress, byte[] byteArrayBuffer, uint size, out uint numberOfBytesRead);
@@ -28,4 +36,7 @@ public static class NativeData
     [DllImport("kernel32.dll")] public static extern bool VirtualProtectEx(IntPtr processHandle, IntPtr baseAddress, uint size, uint newProtection, out uint oldProtection);
     [DllImport("kernel32.dll")] public static extern int VirtualQueryEx(IntPtr hProcess, IntPtr lpAddress, out MEMORY_BASIC_INFORMATION lpBuffer, uint dwLength);
     [DllImport("kernel32.dll")] public static extern bool CloseHandle(IntPtr hObject);
+
+    [DllImport("kernel32.dll")] public static extern IntPtr VirtualAllocEx(IntPtr processHandle, IntPtr baseAddress, uint size, uint allocType, uint newProtection);
+
 }
