@@ -47,29 +47,29 @@ public class ReadFunctions
                 Memory<byte> memoryData = ReadByteArrayDefaultEndian(address.value, (uint)Marshal.SizeOf(typeof(T)), useVirtualProtect);
                 return (T)converter(memoryData);
             }
+
+
+            if(typeof(T) == typeof(Vector2) || typeof(T) == typeof(Vector3))
+            {
+                int size = (typeof(T) == typeof(Vector2)) ? sizeof(Single) * 2 : sizeof(Single) * 3;
+                Memory<byte> memoryData = ReadByteArrayDefaultEndian(address.value, (uint)size, useVirtualProtect);
+                Span<byte> span = memoryData.Span;
+
+                if(typeof(T) == typeof(Vector2))
+                {
+                    return (T)(object)new Vector2(
+                        BitConverter.ToSingle(span.Slice(0, sizeof(Single))),
+                        BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single))));
+                }
+
+                return (T)(object)new Vector3(
+                    BitConverter.ToSingle(span.Slice(0, sizeof(Single))),
+                    BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single))),
+                    BitConverter.ToSingle(span.Slice(sizeof(Single) * 2, sizeof(Single)))
+                );
+            }
         }
         catch { }
-
-
-        if(typeof(T) == typeof(Vector2) || typeof(T) == typeof(Vector3))
-        {
-            int size = (typeof(T) == typeof(Vector2)) ? sizeof(Single) * 2 : sizeof(Single) * 3;
-            Memory<byte> memoryData = ReadByteArrayDefaultEndian(address.value, (uint)size, useVirtualProtect);
-            Span<byte> span = memoryData.Span;
-
-            if(typeof(T) == typeof(Vector2))
-            {
-                return (T)(object)new Vector2(
-                    BitConverter.ToSingle(span.Slice(0, sizeof(Single))),
-                    BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single))));
-            }
-
-            return (T)(object)new Vector3(
-                BitConverter.ToSingle(span.Slice(0, sizeof(Single))),
-                BitConverter.ToSingle(span.Slice(sizeof(Single), sizeof(Single))),
-                BitConverter.ToSingle(span.Slice(sizeof(Single) * 2, sizeof(Single)))
-            );
-        }
 
         return default(T);
     }
